@@ -13,7 +13,7 @@ CodeReliabilityScanner is a tool designed to analyze Python code repositories fo
 
 1. Install the required dependencies:
    ```
-   pip install gitpython
+   pip install -r requirements.txt
    ```
 
 2. Update the repository path in the `scanner.py` file:
