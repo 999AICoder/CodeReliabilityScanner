@@ -1,5 +1,6 @@
 import ast
 import git
+import argparse
 from typing import Dict, List
 
 class ReliabilityScanner:
@@ -53,5 +54,9 @@ class ReliabilityScanner:
                 self.annotate_code(file.abspath, issues)
 
 if __name__ == "__main__":
-    scanner = ReliabilityScanner("/path/to/repo")
+    parser = argparse.ArgumentParser(description="Scan a repository for code reliability issues.")
+    parser.add_argument("repo_path", help="Path to the repository to scan")
+    args = parser.parse_args()
+
+    scanner = ReliabilityScanner(args.repo_path)
     scanner.scan_repository()

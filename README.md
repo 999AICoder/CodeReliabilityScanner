@@ -16,14 +16,9 @@ CodeReliabilityScanner is a tool designed to analyze Python code repositories fo
    pip install -r requirements.txt
    ```
 
-2. Update the repository path in the `scanner.py` file:
-   ```python
-   scanner = ReliabilityScanner("/path/to/your/repo")
+2. Run the scanner by providing the path to your repository:
    ```
-
-3. Run the scanner:
-   ```
-   python scanner.py
+   python scanner.py /path/to/your/repo
    ```
 
 4. The scanner will analyze all Python files in the specified repository and annotate them with identified issues.
