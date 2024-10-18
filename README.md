@@ -3,6 +3,10 @@
 ## Overview
 This tool is designed to analyze and improve the quality of Python code repositories. It uses various linters, static code analysis tools, and AI-powered suggestions to identify and fix potential issues in your codebase.
 
+This code is considered alpha as of 2014-10-18
+
+98% of this code was written by [aider](https://github.com/Aider-AI/aider) 
+
 ## Features
 - Scans Python files in a git repository
 - Runs multiple linters (Pylint, Flake8, Ruff)
@@ -24,7 +28,16 @@ This tool is designed to analyze and improve the quality of Python code reposito
 
 ## How to Use
 
+0. Install aider-chat
+   You can do this in either a virtual environment for this project or
+   at globally depending on your preference. See config.yaml info below
+   ```
+   pip install aider-chat
+   ```
+
 1. Install the required dependencies:
+   We highly recommend you create a virtual environment for these dependencies
+   and once you have activated it run the following command.
    ```
    pip install -r requirements.txt
    ```
@@ -35,12 +48,19 @@ This tool is designed to analyze and improve the quality of Python code reposito
    ```
    Open `config.yaml` in a text editor and update the variables according to your setup.
 
-3. Run the main agent:
+3. To interrogate a specific file using AI:
    ```
-   python agent_v2.py /path/to/your/repo
+   python aider_interrogator.py --file /path/to/file.py --question "Your question about the file"
    ```
 
-4. Use the CLI or web interface to manage and apply suggestions:
+4. Use the CLI or web interface to manage review aider_interrogator.py suggestions:
+
+   Start the api server:
+   ```
+   uvicorn suggestion_api:app
+   ```
+
+   Then use either the web or cli interface to review suggestions
    ```
    python suggestion_cli.py
    ```
@@ -49,9 +69,17 @@ This tool is designed to analyze and improve the quality of Python code reposito
    python suggestion_web.py
    ```
 
-5. To interrogate a specific file using AI:
+   You can delete a suggestion on the details page in the web interface.
+
+   To delete a suggestion using the cli interface use:
    ```
-   python aider_interrogator.py --file /path/to/file.py --question "Your question about the file"
+   python suggestion_cli.py --delete <id>
+   ```
+
+5. Run the automated agent: EXPERIMENTAL - not recommended for critical code
+   This script will scan the Python files in the specified repository, run linters, process issues, and modify files using aider. 
+   ```
+   python agent_v2.py /path/to/your/repo
    ```
 
 ## Aider Interrogator
