@@ -1,9 +1,12 @@
+black==24.10.0
 fastapi==0.115.2
 Flask==3.0.3
 GitPython==3.1.43
 pydantic==2.9.2
 pytest==8.3.3
 PyYAML==6.0.2
+pylint==3.3.1
 Requests==2.32.3
 rich==13.9.2
+ruff==0.3.5
 uvicorn==0.32.0
