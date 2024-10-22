@@ -1,12 +1,11 @@
 """
 This module defines the Agent and AgentComponents classes, which are responsible
-for managing and interrogating Python files in a repository using Aider.
+for managing and interrogating Python code using Aider.
 """
 
-import argparse
 import subprocess
 from pathlib import Path
-import sys
+import tempfile
 
 from config import Config
 from logger import Logger
@@ -16,27 +15,32 @@ from suggestion_db import SuggestionDB
 
 class AiderInterrogator(AiderRunner):
     """
-    A class responsible for interrogating files using Aider.
+    A class responsible for interrogating code using Aider.
     """
 
     def __init__(self, config: Config, command_runner: CommandRunner, logger: Logger):
         super().__init__(config, command_runner, logger)
         self.db = SuggestionDB()
 
-    def ask_question(self, file_path: Path, question: str) -> str:
+    def ask_question(self, code: str, question: str) -> str:
         """
-        Ask Aider a question about a specific file.
+        Ask Aider a question about the given code.
 
         Args:
-            file_path (Path): Path to the file to be interrogated.
-            question (str): The question to ask about the file.
+            code (str): The Python code to be interrogated.
+            question (str): The question to ask about the code.
 
         Returns:
             str: Aider's response to the question.
         """
-        self.logger.info(f"Asking Aider about {file_path}: {question}")
+        self.logger.info(f"Asking Aider: {question}")
         env = self.command_runner.activate_virtualenv()
         env['COLUMNS'] = '100'
+
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as temp_file:
+            temp_file.write(code)
+            temp_file_path = Path(temp_file.name)
+
         aider_command = [
             self.config.aider_path,
             "--chat-mode", "ask",
@@ -44,7 +48,7 @@ class AiderInterrogator(AiderRunner):
             "--model", self.config.aider_model,
             "--weak-model", self.config.aider_weak_model,
             "--cache-prompts",
-            str(file_path),
+            str(temp_file_path),
         ]
         
         try:
@@ -76,7 +80,10 @@ class AiderInterrogator(AiderRunner):
                     self.logger.error(f"Aider errors: {stderr}")
 
                 # Store the response in the database
-                self.db.add_suggestion(str(file_path), question, {"response": response.strip()}, self.config.aider_model)
+                self.db.add_suggestion("in_memory_code", question, {"response": response.strip()}, self.config.aider_model)
+
+                # Clean up the temporary file
+                temp_file_path.unlink()
 
                 return response.strip()
         except subprocess.CalledProcessError as e:
@@ -92,50 +99,23 @@ class AgentComponents:
         self.logger = logger
 
 class Agent:
-    """Manages the interrogation of Python files using Aider."""
+    """Manages the interrogation of Python code using Aider."""
 
     def __init__(self, config_path: Path):
         self.config = Config(config_path)
         self.logger = Logger()
         self.components = AgentComponents(self.config, self.logger)
 
-    def interrogate_file(self, file_path: Path, question: str) -> None:
+    def interrogate_code(self, code: str, question: str) -> str:
         """
-        Interrogate a specific file using Aider and store the response in the database.
+        Interrogate the given code using Aider and return the response.
 
         Args:
-            file_path (Path): Path to the file to be interrogated.
-            question (str): The question to ask about the file.
+            code (str): The Python code to be interrogated.
+            question (str): The question to ask about the code.
+
+        Returns:
+            str: Aider's response to the question.
         """
-        self.logger.info(f"Interrogating file: {file_path}")
-        response = self.components.aider_interrogator.ask_question(file_path, question)
-        print(f"Response for {file_path}:")
-        print(response)
-
-def main():
-    """Parse command-line arguments and execute the agent."""
-    parser = argparse.ArgumentParser(
-        description="Interrogate Python files using Aider.")
-    parser.add_argument("--file", type=str, required=True, help="Python file to interrogate")
-    parser.add_argument("--question", type=str, required=True, help="Question to ask about the file")
-    args = parser.parse_args()
-
-    script_dir = Path(__file__).resolve().parent
-    config_path = script_dir / 'config.yaml'
-    if not config_path.exists():
-        print("Error: Configuration file 'config.yaml' not found in the script directory.")
-        sys.exit(1)
-
-    agent = Agent(config_path)
-    try:
-        file_path = Path(args.file)
-        if not file_path.exists():
-            print(f"Error: File {file_path} does not exist.")
-            sys.exit(1)
-        agent.interrogate_file(file_path, args.question)
-    except KeyboardInterrupt:
-        print("\nExecution interrupted by user. Exiting.")
-        sys.exit(0)
-
-if __name__ == "__main__":
-    main()
+        self.logger.info("Interrogating code")
+        return self.components.aider_interrogator.ask_question(code, question)
