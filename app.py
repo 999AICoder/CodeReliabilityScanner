@@ -42,7 +42,7 @@ Talisman(app,
              'font-src': ["'self'"],
              'img-src': ["'self'"],
          },
-         force_https=not app.debug)
+         force_https=False if os.environ.get('FLASK_ENV') == 'development' else True)
 
 def validate_input(code: str, question: str) -> tuple[bool, str]:
     """Validate the input data."""
