@@ -1,7 +1,8 @@
 from flask import Flask, request, render_template
 import tempfile
 from pathlib import Path
-from aider_interrogator import Agent, Config
+from aider_interrogator import Agent
+from config import Config
 
 app = Flask(__name__)
 
@@ -11,18 +12,10 @@ def index():
         code = request.form['code']
         question = request.form['question']
         
-        # Save code to a temporary file
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as temp_file:
-            temp_file.write(code)
-            temp_file_path = Path(temp_file.name)
-        
-        # Initialize Agent and interrogate the file
+        # Initialize Agent and interrogate the code
         config = Config('config.yaml')
         agent = Agent(config)
-        response = agent.interrogate_file(temp_file_path, question)
-        
-        # Clean up the temporary file
-        temp_file_path.unlink()
+        response = agent.interrogate_code(code, question)
         
         return render_template('result.html', response=response)
     
