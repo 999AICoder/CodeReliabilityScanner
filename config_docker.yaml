@@ -5,8 +5,6 @@ TEST_COMMAND: ''
 AIDER_PATH: ''
 MAX_LINE_LENGTH: 100
 AUTOPEP8_FIX: false
-AIDER_MODEL: 'codestral/codestral-latest'
-AIDER_WEAK_MODEL: 'codestral/codestral-latest'
 LINTER: 'pylint'
 LINE_COUNT_MAX: 500
 LINE_COUNT_MIN: 10
