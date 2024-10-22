@@ -9,6 +9,11 @@ from config import Config
 import html
 from werkzeug.exceptions import RequestEntityTooLarge
 
+# Load config for validation limits
+config = Config(get_config_path())
+MAX_CODE_LENGTH = config.max_code_length
+MAX_QUESTION_LENGTH = config.max_question_length
+
 app = Flask(__name__)
 # Set a secret key for CSRF protection - in production this should come from environment/config
 app.config['SECRET_KEY'] = os.environ.get('FLASK_SECRET_KEY', 'your-secret-key-here')
@@ -32,6 +37,7 @@ Talisman(app,
          force_https=not app.debug)
 
 def get_config_path():
+    """Get the appropriate config file path based on environment."""
     if os.environ.get('DOCKER_ENV'):
         return 'config_docker.yaml'
     return 'config_local.yaml'

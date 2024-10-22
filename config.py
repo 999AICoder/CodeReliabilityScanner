@@ -37,6 +37,10 @@ class Config:
         self.line_count_max = config.get('LINE_COUNT_MAX', 200)
         self.line_count_min = config.get('LINE_COUNT_MIN', 10)
         self.enable_black = config.get('ENABLE_BLACK', False)
+        
+        # Security limits
+        self.max_code_length = config.get('MAX_CODE_LENGTH', 50000)
+        self.max_question_length = config.get('MAX_QUESTION_LENGTH', 1000)
 
     def _get_secret(self, secret_id: str) -> str:
         """
