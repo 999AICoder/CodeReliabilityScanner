@@ -11,7 +11,7 @@ COPY . /app
 # Install any needed packages specified in requirements.docker.txt
 RUN pip install --upgrade pip
 RUN pip install uv
-RUN uv pip install --upgrade setuptools
+RUN uv pip install --system --upgrade setuptools
 RUN uv pip install --system --no-cache-dir -r requirements.docker.txt
 
 # Make port 8080 available to the world outside this container
