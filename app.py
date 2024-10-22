@@ -23,7 +23,7 @@ def index():
         agent = Agent(config)
         response = agent.interrogate_code(code, question)
         
-        return render_template('result.html', response=response)
+        return render_template('result.html', response=response, question=question)
     
     return render_template('index.html')
 
