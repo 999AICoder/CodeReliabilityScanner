@@ -64,13 +64,19 @@ class AiderInterrogator(AiderRunner):
                 env=env,
             ) as process:
                 response = ""
+                capture_output = False  # Add flag to control when we start capturing
                 while True:
                     output = process.stdout.readline()
                     if output == "" and process.poll() is not None:
                         break
                     if output:
                         self.logger.info(output.strip())
-                        response += output
+                        # Start capturing after we see the help text
+                        if "Use /help" in output:
+                            capture_output = True
+                            continue
+                        if capture_output:
+                            response += output
                         if "?" in output:  # This is likely a question
                             process.stdin.write("No\n")
                             process.stdin.flush()
