@@ -21,9 +21,13 @@
         <h1 class="mb-4">Aider Response</h1>
         <div class="card">
             <div class="card-body">
+                {% if question %}
                 <h5 class="card-title">Question:</h5>
                 <p class="card-text">{{ question }}</p>
                 <h5 class="card-title mt-4">Response:</h5>
+                {% else %}
+                <h5 class="card-title">Response:</h5>
+                {% endif %}
                 <pre class="card-text">{{ response }}</pre>
             </div>
         </div>

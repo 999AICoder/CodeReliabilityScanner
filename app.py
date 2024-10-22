@@ -23,7 +23,12 @@ def index():
         agent = Agent(config)
         response = agent.interrogate_code(code, question)
         
-        return render_template('result.html', response=response, question=question)
+        # Only show question if not running in Docker
+        template_params = {'response': response}
+        if not os.environ.get('DOCKER_ENV'):
+            template_params['question'] = question
+        
+        return render_template('result.html', **template_params)
     
     return render_template('index.html')
 
