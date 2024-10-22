@@ -1,0 +1,13 @@
+REPO_PATH: '/app'
+VENV_PATH: ''
+VENV_DIR: ''
+TEST_COMMAND: ''
+AIDER_PATH: ''
+MAX_LINE_LENGTH: 100
+AUTOPEP8_FIX: false
+AIDER_MODEL: 'openrouter/anthropic/claude-3.5-sonnet:beta'
+AIDER_WEAK_MODEL: 'openrouter/anthropic/claude-3-haiku-20240307'
+LINTER: 'pylint'
+LINE_COUNT_MAX: 200
+LINE_COUNT_MIN: 10
+ENABLE_BLACK: false

@@ -1,10 +1,15 @@
+import os
 from flask import Flask, request, render_template
-import tempfile
 from pathlib import Path
 from aider_interrogator import Agent
 from config import Config
 
 app = Flask(__name__)
+
+def get_config_path():
+    if os.environ.get('DOCKER_ENV'):
+        return 'config_docker.yaml'
+    return 'config_local.yaml'
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -12,8 +17,9 @@ def index():
         code = request.form['code']
         question = request.form['question']
         
-        # Initialize Agent and interrogate the code
-        config = Config('config.yaml')
+        # Initialize Agent with the appropriate config file
+        config_path = get_config_path()
+        config = Config(config_path)
         agent = Agent(config)
         response = agent.interrogate_code(code, question)
         
