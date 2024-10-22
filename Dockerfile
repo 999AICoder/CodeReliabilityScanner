@@ -20,6 +20,7 @@ EXPOSE 8080
 # Set environment variables
 ENV DOCKER_ENV=1
 ENV NAME=World
+ENV PYTHONWARNINGS="ignore::SyntaxWarning"
 
 RUN apt update
 RUN apt install -y git
