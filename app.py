@@ -24,7 +24,10 @@ def index():
         response = agent.interrogate_code(code, question)
         
         # Only show question if not running in Docker
-        template_params = {'response': response}
+        template_params = {
+            'response': response,
+            'code': code  # Add the code to the template parameters
+        }
         if not os.environ.get('DOCKER_ENV'):
             template_params['question'] = question
         
