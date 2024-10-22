@@ -29,6 +29,7 @@ app.config['MAX_CONTENT_LENGTH'] = 1 * 1024 * 1024  # 1MB max-limit
 
 # Initialize security extensions
 csrf = CSRFProtect(app)
+is_development = os.environ.get('FLASK_ENV') == 'development'
 Talisman(app, 
          content_security_policy={
              'default-src': "'self'",
@@ -42,7 +43,10 @@ Talisman(app,
              'font-src': ["'self'"],
              'img-src': ["'self'"],
          },
-         force_https=False if os.environ.get('FLASK_ENV') == 'development' else True)
+         force_https=False,  # Disable HTTPS enforcement
+         force_file_save=False,
+         strict_transport_security=False if is_development else True,
+         session_cookie_secure=False if is_development else True)
 
 def validate_input(code: str, question: str) -> tuple[bool, str]:
     """Validate the input data."""
