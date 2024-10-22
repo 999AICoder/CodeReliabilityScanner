@@ -12,7 +12,7 @@ class Config:
         if not isinstance(config, dict):
             raise ValueError(f"Invalid configuration format in {config_path}. Expected a YAML dictionary.")
 
-        self.repo_path = Path(config.get('REPO_PATH', '/app'))
+        self.repo_path = Path(config.get('REPO_PATH', '.'))
         self.venv_path = Path(config.get('VENV_PATH', ''))
         self.venv_dir = config.get('VENV_DIR', '')
         self.test_command = config.get('TEST_COMMAND', '')

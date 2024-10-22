@@ -42,7 +42,7 @@ class AiderInterrogator(AiderRunner):
             temp_file_path = Path(temp_file.name)
 
         aider_command = [
-            self.config.aider_path if self.config.aider_path else "aider",
+            "aider" if not self.config.aider_path else self.config.aider_path,
             "--chat-mode", "ask",
             "--message", question,
             "--model", self.config.aider_model,
