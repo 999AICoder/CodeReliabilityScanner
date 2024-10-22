@@ -101,8 +101,8 @@ class AgentComponents:
 class Agent:
     """Manages the interrogation of Python code using Aider."""
 
-    def __init__(self, config_path: Path):
-        self.config = Config(config_path)
+    def __init__(self, config: Config):
+        self.config = config
         self.logger = Logger()
         self.components = AgentComponents(self.config, self.logger)
 
