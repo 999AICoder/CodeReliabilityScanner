@@ -1,6 +1,9 @@
 black==24.10.0
 fastapi==0.115.2
 Flask==3.0.3
+flask-wtf==1.2.1
+flask-talisman==1.1.0
+email-validator==2.1.1
 GitPython==3.1.43
 pydantic==2.9.2
 pytest==8.3.3
