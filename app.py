@@ -9,6 +9,7 @@ from config import Config
 import html
 from werkzeug.exceptions import RequestEntityTooLarge
 
+
 # Load config for validation limits
 config = Config(get_config_path())
 MAX_CODE_LENGTH = config.max_code_length
