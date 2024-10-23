@@ -43,6 +43,8 @@ class CommandRunner:
             check_boolean = False
 
         if "git" not in command[0]:
+            if isinstance(command, str):
+                command = command.split()
             command = ["source", f"{self.config.venv_dir}/bin/activate", "&&"] + command
 
         command_str = " ".join(command)
