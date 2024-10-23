@@ -80,6 +80,7 @@ class AiderInterrogator(AiderRunner):
             "aider",
             "--chat-mode",
             "ask",
+            "--no-check-update",
             "--message",
             question,
             "--model",
