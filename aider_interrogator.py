@@ -28,6 +28,8 @@ class AiderInterrogator(AiderRunner):
     def __init__(self, config: Config, command_runner: CommandRunner, logger: Logger):
         super().__init__(config, command_runner, logger)
         self.db = SuggestionDB()
+        self.resource_manager = ResourceManager(config)
+        self.resource_manager.start_monitoring()
 
     @retry(
         stop=stop_after_attempt(3),
@@ -45,6 +47,10 @@ class AiderInterrogator(AiderRunner):
         Returns:
             str: Aider's response to the question.
         """
+        # Check rate limiting before making API call
+        if not self.resource_manager.check_rate_limit():
+            raise AiderProcessError("API rate limit exceeded. Please try again later.")
+            
         self.logger.info(f"Asking Aider: {question}")
         env = self.command_runner.activate_virtualenv()
         env['COLUMNS'] = '100'
@@ -123,12 +129,10 @@ class AiderInterrogator(AiderRunner):
             self.logger.error("Maximum retries exceeded for Aider process")
             raise
         finally:
-            # Ensure temporary file is always deleted, even if an exception occurs
-            if temp_file_path and temp_file_path.exists():
-                try:
-                    temp_file_path.unlink()
-                except Exception as e:
-                    self.logger.error(f"Failed to delete temporary file {temp_file_path}: {e}")
+            # Register temp file with resource manager and clean up
+            if temp_file_path:
+                self.resource_manager.register_temp_file(temp_file_path)
+                self.resource_manager.cleanup_resources()
 
 class AgentComponents:
     """A class that initializes and holds various components used by the Agent."""
