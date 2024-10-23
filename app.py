@@ -1,5 +1,6 @@
 import os
 from flask import Flask, request, render_template, abort, jsonify
+from flask_wtf.csrf import CSRFProtect
 from exceptions import AiderTimeoutError, AiderProcessError, CodeValidationError, MaxRetriesExceededError
 from flask_wtf import CSRFProtect
 from flask_wtf.csrf import CSRFError
@@ -24,6 +25,8 @@ MAX_CODE_LENGTH = config.max_code_length
 MAX_QUESTION_LENGTH = config.max_question_length
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = 'your-secret-key-here'  # In production, use a secure secret key
+csrf = CSRFProtect(app)
 # Set a secret key for CSRF protection - in production this should come from environment/config
 app.config['SECRET_KEY'] = os.environ.get('FLASK_SECRET_KEY', 'your-secret-key-here')
 app.config['MAX_CONTENT_LENGTH'] = 1 * 1024 * 1024  # 1MB max-limit
