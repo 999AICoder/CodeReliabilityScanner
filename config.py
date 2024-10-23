@@ -2,7 +2,6 @@ import os
 import yaml
 from pathlib import Path
 from typing import Dict, Any, Optional
-from google.cloud import secretmanager
 from config_schema import ConfigSchema
 
 class Config:
@@ -21,16 +20,10 @@ class Config:
         if not isinstance(config, dict):
             raise ValueError(f"Invalid configuration format in {config_path}. Expected a YAML dictionary.")
             
-        # Initialize Secret Manager client if running in GCP
-        self.secret_client = None
-        if os.environ.get('GOOGLE_CLOUD_PROJECT'):
-            self.secret_client = secretmanager.SecretManagerServiceClient()
-            self.project_id = os.environ.get('GOOGLE_CLOUD_PROJECT')
-            
-        # Get secrets first
-        config['AIDER_MODEL'] = self._get_secret('AIDER_MODEL') or config.get('AIDER_MODEL')
-        config['AIDER_WEAK_MODEL'] = self._get_secret('AIDER_WEAK_MODEL') or config.get('AIDER_WEAK_MODEL')
-        config['AIDER_API_KEY'] = self._get_secret('AIDER_API_KEY')
+        # Set default values if not in config
+        config['AIDER_MODEL'] = config.get('AIDER_MODEL')
+        config['AIDER_WEAK_MODEL'] = config.get('AIDER_WEAK_MODEL')
+        config['AIDER_API_KEY'] = os.environ.get('AIDER_API_KEY')
         
         # Validate configuration against schema
         validated_config = ConfigSchema.validate(config)
