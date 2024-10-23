@@ -9,6 +9,7 @@ import signal
 import time
 from pathlib import Path
 import tempfile
+from typing import List, Dict
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 from exceptions import AiderTimeoutError, AiderProcessError, MaxRetriesExceededError
