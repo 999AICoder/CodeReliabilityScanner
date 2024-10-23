@@ -4,6 +4,9 @@ for managing and interrogating Python code using Aider.
 """
 
 import subprocess
+import os
+import signal
+import time
 from pathlib import Path
 import tempfile
 
@@ -54,6 +57,9 @@ class AiderInterrogator(AiderRunner):
                 str(temp_file_path),
             ]
             
+            # Set timeout for the entire process
+            timeout = 300  # 5 minutes
+            
             with subprocess.Popen(
                 aider_command,
                 cwd=self.config.repo_path,
@@ -64,12 +70,22 @@ class AiderInterrogator(AiderRunner):
                 bufsize=1,
                 universal_newlines=True,
                 env=env,
+                preexec_fn=os.setsid  # Create new process group
             ) as process:
                 response = ""
                 capture_output = False
+                start_time = time.time()
                 while True:
-                    output = process.stdout.readline()
-                    if output == "" and process.poll() is not None:
+                    if time.time() - start_time > timeout:
+                        os.killpg(os.getpgid(process.pid), signal.SIGTERM)
+                        raise TimeoutError(f"Aider process timed out after {timeout} seconds")
+                        
+                    try:
+                        output = process.stdout.readline()
+                        if output == "" and process.poll() is not None:
+                            break
+                    except Exception as e:
+                        self.logger.error(f"Error reading from Aider process: {e}")
                         break
                     if output:
                         self.logger.info(output.strip())

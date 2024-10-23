@@ -48,25 +48,37 @@ Talisman(app,
          strict_transport_security=False if is_development else True,
          session_cookie_secure=False if is_development else True)
 
+from validators import validate_code_safety, sanitize_input
+
 def validate_input(code: str, question: str) -> tuple[bool, str]:
-    """Validate the input data."""
+    """
+    Validate the input data.
+    
+    Args:
+        code (str): The code to validate
+        question (str): The question to validate
+        
+    Returns:
+        tuple[bool, str]: (is_valid, error_message)
+    """
+    # Basic empty checks
     if not code or not code.strip():
         return False, "Code cannot be empty"
-    #if not question or not question.strip():
-    #    return False, "Question cannot be empty"
+        
+    # Length checks
     if len(code) > MAX_CODE_LENGTH:
         return False, f"Code exceeds maximum length of {MAX_CODE_LENGTH} characters"
     if len(question) > MAX_QUESTION_LENGTH:
         return False, f"Question exceeds maximum length of {MAX_QUESTION_LENGTH} characters"
+        
+    # Sanitize inputs
+    code = sanitize_input(code)
+    question = sanitize_input(question)
     
-    # Basic Python syntax check
-    # this really feels worse than no check at all
-    # it also prevents other languages from being sent in
-
-    #try:
-    #    compile(code, '<string>', 'exec')
-    #except SyntaxError:
-    #    return False, "Invalid Python syntax in code"
+    # Safety validation
+    is_safe, error_msg = validate_code_safety(code)
+    if not is_safe:
+        return False, error_msg
     
     return True, ""
 
