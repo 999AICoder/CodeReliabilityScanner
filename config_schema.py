@@ -24,12 +24,12 @@ class ConfigSchema:
     MAX_QUESTION_LENGTH: int
     
     # Resource management limits
-    MAX_MEMORY_MB: int = 512
-    MAX_CPU_PERCENT: float = 80.0
-    DB_CONNECTION_TIMEOUT: int = 30
-    DB_CONNECTION_RETRIES: int = 3
-    API_RATE_LIMIT: int = 60  # requests per minute
-    CLEANUP_THRESHOLD_MB: int = 400
+    max_memory_mb: int = 512
+    max_cpu_percent: float = 80.0
+    db_connection_timeout: int = 30
+    db_connection_retries: int = 3
+    api_rate_limit: int = 60  # requests per minute
+    cleanup_threshold_mb: int = 400
     
     @classmethod
     def validate(cls, config: Dict[str, Any]) -> Dict[str, Any]:

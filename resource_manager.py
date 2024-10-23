@@ -40,11 +40,11 @@ class ResourceManager:
                 memory_percent = self.process.memory_percent()
                 cpu_percent = self.process.cpu_percent()
                 
-                if memory_percent > (self.config.MAX_MEMORY_MB * 100 / psutil.virtual_memory().total):
+                if memory_percent > (self.config.max_memory_mb * 100 / psutil.virtual_memory().total):
                     self.logger.warning(f"Memory usage too high: {memory_percent:.1f}%")
                     self.cleanup_resources()
                     
-                if cpu_percent > self.config.MAX_CPU_PERCENT:
+                if cpu_percent > self.config.max_cpu_percent:
                     self.logger.warning(f"CPU usage too high: {cpu_percent:.1f}%")
                     
             except Exception as e:
@@ -88,7 +88,7 @@ class ResourceManager:
             if current_time - call_time < timedelta(minutes=1)
         ]
         
-        if len(self.api_calls) >= self.config.API_RATE_LIMIT:
+        if len(self.api_calls) >= self.config.api_rate_limit:
             return False
             
         self.api_calls.append(current_time)
