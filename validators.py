@@ -2,6 +2,49 @@
 import re
 from typing import Tuple
 from exceptions import CodeValidationError
+from config import Config
+
+def get_config_path():
+    """Get the appropriate config file path based on environment."""
+    import os
+    if os.environ.get('DOCKER_ENV'):
+        return 'config_docker.yaml'
+    return 'config_local.yaml'
+
+def validate_input(code: str, question: str) -> tuple[bool, str]:
+    """
+    Validate the input data.
+    
+    Args:
+        code (str): The code to validate
+        question (str): The question to validate
+        
+    Returns:
+        tuple[bool, str]: (is_valid, error_message)
+    """
+    # Load config for validation limits
+    config = Config(get_config_path())
+    
+    # Basic empty checks
+    if not code or not code.strip():
+        return False, "Code cannot be empty"
+        
+    # Length checks
+    if len(code) > config.max_code_length:
+        return False, f"Code exceeds maximum length of {config.max_code_length} characters"
+    if len(question) > config.max_question_length:
+        return False, f"Question exceeds maximum length of {config.max_question_length} characters"
+        
+    # Sanitize inputs
+    code = sanitize_input(code)
+    question = sanitize_input(question)
+    
+    # Safety validation
+    is_safe, error_msg = validate_code_safety(code)
+    if not is_safe:
+        return False, error_msg
+    
+    return True, ""
 
 def validate_code_safety(code: str) -> tuple[bool, str]:
     """
