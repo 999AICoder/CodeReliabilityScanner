@@ -127,9 +127,9 @@ class AiderInterrogator(AiderRunner):
                 output = process.stdout.readline()
                 if output == "" and process.poll() is not None:
                     break
-            except Exception as e:
+            except (IOError, OSError) as e:
                 self.logger.error(f"Error reading from Aider process: {e}")
-                break
+                raise AiderProcessError(f"Failed to read Aider output: {e}") from e
 
             if output:
                 self.logger.info(output.strip())
