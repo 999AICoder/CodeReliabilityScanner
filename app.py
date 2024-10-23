@@ -24,33 +24,36 @@ config = Config(get_config_path())
 MAX_CODE_LENGTH = config.max_code_length
 MAX_QUESTION_LENGTH = config.max_question_length
 
-app = Flask(__name__)
-app.config['SECRET_KEY'] = 'your-secret-key-here'  # In production, use a secure secret key
-csrf = CSRFProtect(app)
-# Set a secret key for CSRF protection - in production this should come from environment/config
-app.config['SECRET_KEY'] = os.environ.get('FLASK_SECRET_KEY', 'your-secret-key-here')
-app.config['MAX_CONTENT_LENGTH'] = 1 * 1024 * 1024  # 1MB max-limit
+def create_app():
+    """Create and configure the Flask application."""
+    app = Flask(__name__)
+    app.config['SECRET_KEY'] = os.environ.get('FLASK_SECRET_KEY', 'your-secret-key-here')
+    app.config['MAX_CONTENT_LENGTH'] = 1 * 1024 * 1024  # 1MB max-limit
 
-# Initialize security extensions
-csrf = CSRFProtect(app)
-is_development = os.environ.get('FLASK_ENV') == 'development'
-Talisman(app, 
-         content_security_policy={
-             'default-src': "'self'",
-             'script-src': ["'self'", 
-                          'cdnjs.cloudflare.com',
-                          "'unsafe-inline'"],  # Required for Prism.js
-             'style-src': ["'self'", 
-                         'cdn.jsdelivr.net',
-                         'cdnjs.cloudflare.com',
-                         "'unsafe-inline'"],  # Required for Bootstrap and Prism.js
-             'font-src': ["'self'"],
-             'img-src': ["'self'"],
-         },
-         force_https=False,  # Disable HTTPS enforcement
-         force_file_save=False,
-         strict_transport_security=False if is_development else True,
-         session_cookie_secure=False if is_development else True)
+    # Initialize security extensions
+    csrf = CSRFProtect(app)
+    is_development = os.environ.get('FLASK_ENV') == 'development'
+    Talisman(app, 
+             content_security_policy={
+                 'default-src': "'self'",
+                 'script-src': ["'self'", 
+                              'cdnjs.cloudflare.com',
+                              "'unsafe-inline'"],  # Required for Prism.js
+                 'style-src': ["'self'", 
+                             'cdn.jsdelivr.net',
+                             'cdnjs.cloudflare.com',
+                             "'unsafe-inline'"],  # Required for Bootstrap and Prism.js
+                 'font-src': ["'self'"],
+                 'img-src': ["'self'"],
+             },
+             force_https=False,  # Disable HTTPS enforcement
+             force_file_save=False,
+             strict_transport_security=False if is_development else True,
+             session_cookie_secure=False if is_development else True)
+             
+    return app
+
+app = create_app()
 
 from validators import validate_code_safety, sanitize_input
 
@@ -149,4 +152,9 @@ def index():
     return render_template('index.html')
 
 if __name__ == '__main__':
-    app.run(debug=False, host='0.0.0.0', port=8080)  # Set debug=False in production
+    # Only use this for development
+    if os.environ.get('FLASK_ENV') == 'development':
+        app.run(debug=True, host='0.0.0.0', port=8080)
+    else:
+        print("Please use Gunicorn to run this application in production")
+        sys.exit(1)

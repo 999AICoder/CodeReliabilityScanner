@@ -5,6 +5,7 @@ flask-wtf==1.2.1
 flask-talisman==1.1.0
 email-validator==2.1.1
 GitPython==3.1.43
+gunicorn==21.2.0
 pydantic==2.9.2
 pytest==8.3.3
 PyYAML==6.0.2
