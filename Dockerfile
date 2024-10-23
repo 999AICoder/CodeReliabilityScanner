@@ -21,6 +21,8 @@ ENV DOCKER_ENV=1
 ENV NAME=World
 ENV PYTHONWARNINGS="ignore::SyntaxWarning"
 ENV GOOGLE_CLOUD_PROJECT=""
+ENV FLASK_APP="app.py"
+ENV FLASK_ENV="production"
 
 # Install Google Cloud SDK and other dependencies
 RUN apt-get update && apt-get install -y \
@@ -32,6 +34,9 @@ RUN apt-get update && apt-get install -y \
     && apt-get update && apt-get install -y google-cloud-sdk \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
+
+# Create necessary directories for blueprints if they don't exist in the image
+RUN mkdir -p /app/blueprints
 
 # Run the application with Gunicorn
 CMD ["gunicorn", "--bind", "0.0.0.0:8080", "--workers", "4", "--timeout", "120", "wsgi:app"]
