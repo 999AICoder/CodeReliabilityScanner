@@ -37,21 +37,23 @@ class AiderInterrogator(AiderRunner):
         env = self.command_runner.activate_virtualenv()
         env['COLUMNS'] = '100'
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as temp_file:
-            temp_file.write(code)
-            temp_file_path = Path(temp_file.name)
-
-        aider_command = [
-            "aider",  # Use the installed aider command
-            "--chat-mode", "ask",
-            "--message", question,
-            "--model", self.config.aider_model,
-            "--weak-model", self.config.aider_weak_model,
-            "--cache-prompts",
-            str(temp_file_path),
-        ]
-        
+        temp_file_path = None
         try:
+            # Create temporary file using context manager
+            with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as temp_file:
+                temp_file.write(code)
+                temp_file_path = Path(temp_file.name)
+
+            aider_command = [
+                "aider",
+                "--chat-mode", "ask",
+                "--message", question,
+                "--model", self.config.aider_model,
+                "--weak-model", self.config.aider_weak_model,
+                "--cache-prompts",
+                str(temp_file_path),
+            ]
+            
             with subprocess.Popen(
                 aider_command,
                 cwd=self.config.repo_path,
@@ -64,20 +66,19 @@ class AiderInterrogator(AiderRunner):
                 env=env,
             ) as process:
                 response = ""
-                capture_output = False  # Add flag to control when we start capturing
+                capture_output = False
                 while True:
                     output = process.stdout.readline()
                     if output == "" and process.poll() is not None:
                         break
                     if output:
                         self.logger.info(output.strip())
-                        # Start capturing after we see the help text
                         if "Use /help" in output:
                             capture_output = True
                             continue
                         if capture_output:
                             response += output
-                        if "?" in output:  # This is likely a question
+                        if "?" in output:
                             process.stdin.write("No\n")
                             process.stdin.flush()
 
@@ -88,13 +89,18 @@ class AiderInterrogator(AiderRunner):
                 # Store the response in the database
                 self.db.add_suggestion("in_memory_code", question, {"response": response.strip()}, self.config.aider_model)
 
-                # Clean up the temporary file
-                temp_file_path.unlink()
-
                 return response.strip()
+
         except subprocess.CalledProcessError as e:
             self.logger.error(f"Failed to get response from Aider: {e}")
             return f"Error: {e}"
+        finally:
+            # Ensure temporary file is always deleted, even if an exception occurs
+            if temp_file_path and temp_file_path.exists():
+                try:
+                    temp_file_path.unlink()
+                except Exception as e:
+                    self.logger.error(f"Failed to delete temporary file {temp_file_path}: {e}")
 
 class AgentComponents:
     """A class that initializes and holds various components used by the Agent."""
