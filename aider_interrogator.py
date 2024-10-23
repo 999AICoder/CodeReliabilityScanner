@@ -48,105 +48,125 @@ class AiderInterrogator(AiderRunner):
         Returns:
             str: Aider's response to the question.
         """
-        # Check rate limiting before making API call
+        self._check_rate_limit()
+        self.logger.info(f"Asking Aider: {question}")
+        
+        temp_file_path = self._create_temp_file(code)
+        
+        try:
+            aider_command = self._build_aider_command(temp_file_path, question)
+            response = self._run_aider_process(aider_command)
+            self._store_response(question, response)
+            return response.strip()
+        except (subprocess.CalledProcessError, AiderTimeoutError) as e:
+            self._handle_aider_error(e)
+        except MaxRetriesExceededError:
+            self._handle_max_retries()
+        finally:
+            self._cleanup_resources(temp_file_path)
+
+    def _check_rate_limit(self):
         if not self.resource_manager.check_rate_limit():
             raise AiderProcessError("API rate limit exceeded. Please try again later.")
 
-        self.logger.info(f"Asking Aider: {question}")
+    def _create_temp_file(self, code: str) -> Path:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as temp_file:
+            temp_file.write(code)
+            return Path(temp_file.name)
+
+    def _build_aider_command(self, temp_file_path: Path, question: str) -> List[str]:
+        return [
+            "aider",
+            "--chat-mode",
+            "ask",
+            "--message",
+            question,
+            "--model",
+            self.config.aider_model,
+            "--weak-model",
+            self.config.aider_weak_model,
+            "--cache-prompts",
+            str(temp_file_path),
+        ]
+
+    def _run_aider_process(self, aider_command: List[str]) -> str:
+        env = self._prepare_environment()
+        timeout = 300  # 5 minutes
+
+        with subprocess.Popen(
+            aider_command,
+            cwd=self.config.repo_path,
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            bufsize=1,
+            universal_newlines=True,
+            env=env,
+            preexec_fn=os.setsid,  # Create new process group
+        ) as process:
+            return self._process_aider_output(process, timeout)
+
+    def _prepare_environment(self) -> Dict[str, str]:
         env = self.command_runner.activate_virtualenv()
         env["COLUMNS"] = "100"
+        return env
 
-        temp_file_path = None
-        try:
-            # Create temporary file using context manager
-            with tempfile.NamedTemporaryFile(
-                mode="w", suffix=".py", delete=False
-            ) as temp_file:
-                temp_file.write(code)
-                temp_file_path = Path(temp_file.name)
+    def _process_aider_output(self, process: subprocess.Popen, timeout: int) -> str:
+        response = ""
+        capture_output = False
+        start_time = time.time()
 
-            aider_command = [
-                "aider",
-                "--chat-mode",
-                "ask",
-                "--message",
-                question,
-                "--model",
-                self.config.aider_model,
-                "--weak-model",
-                self.config.aider_weak_model,
-                "--cache-prompts",
-                str(temp_file_path),
-            ]
+        while True:
+            if time.time() - start_time > timeout:
+                os.killpg(os.getpgid(process.pid), signal.SIGTERM)
+                raise AiderTimeoutError(f"Aider process timed out after {timeout} seconds")
 
-            # Set timeout for the entire process
-            timeout = 300  # 5 minutes
+            try:
+                output = process.stdout.readline()
+                if output == "" and process.poll() is not None:
+                    break
+            except Exception as e:
+                self.logger.error(f"Error reading from Aider process: {e}")
+                break
 
-            with subprocess.Popen(
-                aider_command,
-                cwd=self.config.repo_path,
-                stdin=subprocess.PIPE,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                text=True,
-                bufsize=1,
-                universal_newlines=True,
-                env=env,
-                preexec_fn=os.setsid,  # Create new process group
-            ) as process:
-                response = ""
-                capture_output = False
-                start_time = time.time()
-                while True:
-                    if time.time() - start_time > timeout:
-                        os.killpg(os.getpgid(process.pid), signal.SIGTERM)
-                        raise AiderTimeoutError(
-                            f"Aider process timed out after {timeout} seconds"
-                        )
+            if output:
+                self.logger.info(output.strip())
+                if "Use /help" in output:
+                    capture_output = True
+                    continue
+                if capture_output:
+                    response += output
+                if "?" in output:
+                    process.stdin.write("No\n")
+                    process.stdin.flush()
 
-                    try:
-                        output = process.stdout.readline()
-                        if output == "" and process.poll() is not None:
-                            break
-                    except Exception as e:
-                        self.logger.error(f"Error reading from Aider process: {e}")
-                        break
-                    if output:
-                        self.logger.info(output.strip())
-                        if "Use /help" in output:
-                            capture_output = True
-                            continue
-                        if capture_output:
-                            response += output
-                        if "?" in output:
-                            process.stdin.write("No\n")
-                            process.stdin.flush()
+        stderr = process.stderr.read()
+        if stderr:
+            self.logger.error(f"Aider errors: {stderr}")
 
-                stderr = process.stderr.read()
-                if stderr:
-                    self.logger.error(f"Aider errors: {stderr}")
+        return response
 
-                # Store the response in the database
-                self.db.add_suggestion(
-                    "in_memory_code",
-                    question,
-                    {"response": response.strip()},
-                    self.config.aider_model,
-                )
+    def _store_response(self, question: str, response: str):
+        self.db.add_suggestion(
+            "in_memory_code",
+            question,
+            {"response": response.strip()},
+            self.config.aider_model,
+        )
 
-                return response.strip()
+    def _handle_aider_error(self, error: Exception):
+        self.logger.error(f"Failed to get response from Aider: {error}")
+        raise AiderProcessError(f"Failed to get response from Aider: {error}")
 
-        except (subprocess.CalledProcessError, AiderTimeoutError) as e:
-            self.logger.error(f"Failed to get response from Aider: {e}")
-            raise AiderProcessError(f"Failed to get response from Aider: {e}")
-        except MaxRetriesExceededError:
-            self.logger.error("Maximum retries exceeded for Aider process")
-            raise
-        finally:
-            # Register temp file with resource manager and clean up
-            if temp_file_path:
-                self.resource_manager.register_temp_file(temp_file_path)
-                self.resource_manager.cleanup_resources()
+    def _handle_max_retries(self):
+        self.logger.error("Maximum retries exceeded for Aider process")
+        raise MaxRetriesExceededError("Maximum retries exceeded for Aider process")
+
+    def _cleanup_resources(self, temp_file_path: Path):
+        if temp_file_path:
+            self.resource_manager.register_temp_file(temp_file_path)
+            self.resource_manager.cleanup_resources()
 
 
 class AgentComponents:
@@ -156,6 +176,23 @@ class AgentComponents:
         self.command_runner = CommandRunner(config, logger)
         self.aider_interrogator = AiderInterrogator(config, self.command_runner, logger)
         self.logger = logger
+
+    def get_component(self, component_name: str):
+        """
+        Get a component by name.
+
+        Args:
+            component_name (str): The name of the component to retrieve.
+
+        Returns:
+            The requested component.
+
+        Raises:
+            AttributeError: If the component doesn't exist.
+        """
+        if hasattr(self, component_name):
+            return getattr(self, component_name)
+        raise AttributeError(f"Component '{component_name}' not found")
 
 
 class Agent:
