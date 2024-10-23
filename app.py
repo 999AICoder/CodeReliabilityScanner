@@ -60,10 +60,13 @@ def validate_input(code: str, question: str) -> tuple[bool, str]:
         return False, f"Question exceeds maximum length of {MAX_QUESTION_LENGTH} characters"
     
     # Basic Python syntax check
-    try:
-        compile(code, '<string>', 'exec')
-    except SyntaxError:
-        return False, "Invalid Python syntax in code"
+    # this really feels worse than no check at all
+    # it also prevents other languages from being sent in
+
+    #try:
+    #    compile(code, '<string>', 'exec')
+    #except SyntaxError:
+    #    return False, "Invalid Python syntax in code"
     
     return True, ""
 
