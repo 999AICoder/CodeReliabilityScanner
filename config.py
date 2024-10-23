@@ -37,11 +37,27 @@ class Config:
         
         # Set all attributes from validated config
         for key, value in validated_config.items():
-            setattr(self, key.lower(), value)
+            # Convert key to lowercase for attribute names
+            attr_name = key.lower()
+            setattr(self, attr_name, value)
             
         # Convert paths to Path objects
         self.repo_path = Path(self.repo_path)
         self.venv_path = Path(self.venv_path)
+        
+        # Ensure resource management attributes are set
+        required_attrs = [
+            'max_memory_mb',
+            'max_cpu_percent',
+            'db_connection_timeout',
+            'db_connection_retries',
+            'api_rate_limit',
+            'cleanup_threshold_mb'
+        ]
+        
+        for attr in required_attrs:
+            if not hasattr(self, attr):
+                raise ValueError(f"Missing required configuration: {attr}")
 
     def _get_secret(self, secret_id: str) -> str:
         """
