@@ -9,7 +9,7 @@
 <body>
     <div class="container mt-5">
         <h1 class="mb-4">Code Reliability Interrogator</h1>
-        <form action="{{ url_for('analyze') }}" method="post">
+        <form action="{{ url_for('analyzer.analyze') }}" method="post">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <!-- {{ csrf_token() }} -->
             <div class="mb-3">

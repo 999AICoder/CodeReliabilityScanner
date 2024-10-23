@@ -23,7 +23,7 @@
 <body>
     <div class="container mt-5">
         <h1 class="mb-4">Results</h1>
-        <a href="{{ url_for('index') }}" class="btn btn-primary mt-3">Back to Home</a>
+        <a href="{{ url_for('analyzer.index') }}" class="btn btn-primary mt-3">Back to Home</a>
         <div class="card">
             <div class="card-body">
                 {% if question %}
@@ -39,7 +39,7 @@
                 <pre><code class="language-python">{{ code|safe }}</code></pre>
             </div>
         </div>
-        <a href="{{ url_for('analyze') }}" class="btn btn-primary mt-3">Process Another File</a>
+        <a href="{{ url_for('analyzer.analyze') }}" class="btn btn-primary mt-3">Process Another File</a>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/prism.min.js"></script>
