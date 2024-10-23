@@ -19,6 +19,7 @@ from logger import Logger
 from command_runner import CommandRunner
 from aider_runner import AiderRunner
 from suggestion_db import SuggestionDB
+from resource_manager import ResourceManager
 
 class AiderInterrogator(AiderRunner):
     """
