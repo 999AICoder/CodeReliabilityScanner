@@ -157,7 +157,7 @@ class AiderInterrogator(AiderRunner):
 
     def _handle_aider_error(self, error: Exception):
         self.logger.error(f"Failed to get response from Aider: {error}")
-        raise AiderProcessError(f"Failed to get response from Aider: {error}")
+        raise AiderProcessError(f"Failed to get response from Aider: {error}") from error
 
     def _handle_max_retries(self):
         self.logger.error("Maximum retries exceeded for Aider process")
