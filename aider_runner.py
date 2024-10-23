@@ -77,30 +77,7 @@ class AiderRunner:
                 universal_newlines=True,
                 env=env,
             ) as process:
-                while True:
-                    output = process.stdout.readline()
-                    if output == "" and process.poll() is not None:
-                        break
-                    if output:
-                        self.logger.info(output.strip())
-                        if "?" in output:  # This is likely a question
-                            if "Attempt to fix lint errors?" in output:
-                                process.stdin.write("Yes\n")
-                            elif "Allow creation of new file?" in output:
-                                process.stdin.write("Yes\n")
-                            elif "to the chat?" in output and "Add" in output:
-                                process.stdin.write("Yes\n")
-                            elif "Allow edits to file that has not been added to the chat?" in output:
-                                process.stdin.write("Yes\n")
-                            else:
-                                process.stdin.write("No\n")
-                            process.stdin.flush()
-
-                stderr = process.stderr.read()
-                if stderr:
-                    self.logger.error(f"Aider errors: {stderr}")
-
-            return process.returncode
+                return self._process_aider_output(process)
         except FileNotFoundError as e:
             self.logger.error(f"Aider executable not found: {e}")
             return 1
@@ -110,3 +87,46 @@ class AiderRunner:
         except OSError as e:
             self.logger.error(f"OS error: {e}")
             return 1
+    def _process_aider_output(self, process):
+        """
+        Process the output from the Aider subprocess.
+
+        Args:
+            process (subprocess.Popen): The running Aider subprocess.
+
+        Returns:
+            int: The return code from the Aider process.
+        """
+        while True:
+            output = process.stdout.readline()
+            if output == "" and process.poll() is not None:
+                break
+            if output:
+                self.logger.info(output.strip())
+                if "?" in output:  # This is likely a question
+                    self._handle_aider_question(process, output)
+
+        stderr = process.stderr.read()
+        if stderr:
+            self.logger.error(f"Aider errors: {stderr}")
+
+        return process.returncode
+
+    def _handle_aider_question(self, process, question):
+        """
+        Handle questions from the Aider subprocess.
+
+        Args:
+            process (subprocess.Popen): The running Aider subprocess.
+            question (str): The question from Aider.
+        """
+        if any(q in question for q in [
+            "Attempt to fix lint errors?",
+            "Allow creation of new file?",
+            "to the chat?" and "Add" in question,
+            "Allow edits to file that has not been added to the chat?"
+        ]):
+            process.stdin.write("Yes\n")
+        else:
+            process.stdin.write("No\n")
+        process.stdin.flush()
