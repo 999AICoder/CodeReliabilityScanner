@@ -1,4 +1,5 @@
 import os
+import sys
 from flask import Flask, request, render_template, abort, jsonify
 from flask_wtf.csrf import CSRFProtect
 from exceptions import AiderTimeoutError, AiderProcessError, CodeValidationError, MaxRetriesExceededError
