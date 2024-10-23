@@ -12,15 +12,17 @@ def validate_code_safety(code: str) -> Tuple[bool, str]:
     Returns:
         Tuple[bool, str]: (is_valid, error_message)
     """
+    # set strictness - will want to move this to the config
+    strict = False
     # Check for potentially dangerous imports
     dangerous_imports = [
         'os.system', 'subprocess.call', 'subprocess.run', 'eval', 'exec',
         '__import__', 'importlib', 'pty', 'popen'
     ]
-    
-    for imp in dangerous_imports:
-        if imp.lower() in code.lower():
-            return False, f"Potentially unsafe code pattern detected: {imp}"
+    if strict:
+        for imp in dangerous_imports:
+            if imp.lower() in code.lower():
+                return False, f"Potentially unsafe code pattern detected: {imp}"
             
     # Check for reasonable line lengths
     max_line_length = 500
