@@ -150,7 +150,7 @@ def analyze():
             app.logger.error(f"Error processing request: {str(e)}")
             return render_template('error.html', error=error_message), status_code
     
-    return render_template('index.html')
+    return render_template('analyze.html')
 
 if __name__ == '__main__':
     # Only use this for development
