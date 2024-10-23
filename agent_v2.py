@@ -94,7 +94,8 @@ class Agent:
         # Add this check
         if not self.verify_repo_path():
             self.logger.error(
-                f"The specified REPO_PATH ({self.config.repo_path}) is not a git repository or is not the top-level directory.")
+                f"The specified REPO_PATH ({self.config.repo_path}) "
+                "is not a git repository or is not the top-level directory.")
             sys.exit(1)
 
     def verify_repo_path(self) -> bool:
@@ -117,22 +118,22 @@ class Agent:
         print("Configuration Summary:")
         print(f"Repository Path: {self.config.repo_path}")
         print(f"Virtual Environment Path: {self.config.venv_path}")
-        print(f"Virtual Environment Directory: {self.config.venv_dir}")
-        print(f"Test Command: {self.config.test_command}")
-        print(f"Aider Path: {self.config.aider_path}")
-        print(f"Max Line Length: {self.config.max_line_length}")
-        print(f"Autopep8 Fix: {self.config.autopep8_fix}")
-        print(f"Aider Model: {self.config.aider_model}")
-        print(f"Aider Weak Model: {self.config.aider_weak_model}")
-        print(f"Linter: {self.config.linter}")
-        print(f"Line Count Max: {self.config.line_count_max}")
-        print(f"Line Count Min: {self.config.line_count_min}")
-        print(f"Enable Black: {self.config.enable_black}")
+        print(f"Virtual Environment Directory: {getattr(self.config, 'venv_dir', 'Not set')}")
+        print(f"Test Command: {getattr(self.config, 'test_command', 'Not set')}")
+        print(f"Aider Path: {getattr(self.config, 'aider_path', 'Not set')}")
+        print(f"Max Line Length: {getattr(self.config, 'max_line_length', 'Not set')}")
+        print(f"Autopep8 Fix: {getattr(self.config, 'autopep8_fix', 'Not set')}")
+        print(f"Aider Model: {getattr(self.config, 'aider_model', 'Not set')}")
+        print(f"Aider Weak Model: {getattr(self.config, 'aider_weak_model', 'Not set')}")
+        print(f"Linter: {getattr(self.config, 'linter', 'Not set')}")
+        print(f"Line Count Max: {getattr(self.config, 'line_count_max', 'Not set')}")
+        print(f"Line Count Min: {getattr(self.config, 'line_count_min', 'Not set')}")
+        print(f"Enable Black: {getattr(self.config, 'enable_black', 'Not set')}")
 
     def check_pylintrc(self):
         """Check for the presence of a .pylintrc file and warn if it is missing."""
         pylintrc_path = os.path.join(self.config.repo_path, '.pylintrc')
-        if self.config.linter == 'pylint' and not os.path.exists(pylintrc_path):
+        if getattr(self.config, 'linter', None) == 'pylint' and not os.path.exists(pylintrc_path):
             print("\nWARNING: No .pylintrc file found in the repository directory.")
             print("While it is not mandatory, it is recommended to have a .pylintrc file "
                   "in the repository directory.")
@@ -171,7 +172,8 @@ class Agent:
         # Add this check
         if not self.verify_repo_path():
             self.logger.error(
-                f"The specified REPO_PATH ({self.config.repo_path}) is not a git repository or is not the top-level directory.")
+                f"The specified REPO_PATH ({self.config.repo_path}) "
+                "is not a git repository or is not the top-level directory.")
             sys.exit(1)
 
         os.chdir(self.config.repo_path)
@@ -182,7 +184,7 @@ class Agent:
             tracked_files = self.get_tracked_files()
             python_files = [Path(file) for file in tracked_files if str(file).endswith('.py')]
 
-        excluded_dirs = {self.config.venv_dir, ".git", "benchmark", "tests"}
+        excluded_dirs = {getattr(self.config, 'venv_dir', ''), ".git", "benchmark", "tests"}
         python_files = [
             file for file in python_files
             if not any(excluded_dir in file.parts for excluded_dir in excluded_dirs)
@@ -195,9 +197,10 @@ class Agent:
                 self.logger.info(f"Skipping __<file>: {file}")
                 continue
             line_count = self.rawgencount(file)
-            if line_count > self.config.line_count_max:
+            line_count_max = getattr(self.config, 'line_count_max', float('inf'))
+            if line_count > line_count_max:
                 self.logger.info(
-                    f"Skipping file with more than {self.config.line_count_max} "
+                    f"Skipping file with more than {line_count_max} "
                     f"lines: {file}"
                 )
                 time.sleep(.25)
@@ -205,20 +208,21 @@ class Agent:
             if line_count == 0:
                 self.logger.info(f"Skipping empty file: {file}")
                 continue
-            if line_count < self.config.line_count_min:
+            line_count_min = getattr(self.config, 'line_count_min', 0)
+            if line_count < line_count_min:
                 self.logger.info(
-                    f"Skipping file with less than {self.config.line_count_min} "
+                    f"Skipping file with less than {line_count_min} "
                     f"lines: {file}"
                 )
                 continue
 
-            self.logger.info("Attempting to process Python file: {}".format(file))
+            self.logger.info(f"Attempting to process Python file: {file}")
             self.file_processor.process_file(file)
 
     @staticmethod
     def rawgencount(filename):
         """Count the number of lines in a file using a generator."""
-        with open(filename, 'r') as f:
+        with open(filename, 'r', encoding='utf-8') as f:
             return sum(1 for _ in f)
 
     @staticmethod
