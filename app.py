@@ -98,7 +98,11 @@ def handle_csrf_error(e):
 def handle_request_too_large(e):
     return render_template('error.html', error="File too large"), 413
 
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/', methods=['GET'])
+def index():
+    return render_template('index.html')
+
+@app.route('/analyze', methods=['GET', 'POST'])
 def analyze():
     if request.method == 'POST':
         try:
