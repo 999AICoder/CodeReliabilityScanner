@@ -3,7 +3,7 @@ import re
 from typing import Tuple
 from exceptions import CodeValidationError
 
-def validate_code_safety(code: str) -> None:
+def validate_code_safety(code: str) -> tuple[bool, str]:
     """
     Validate code for potentially unsafe patterns.
     
@@ -11,31 +11,37 @@ def validate_code_safety(code: str) -> None:
         code (str): The code to validate
         
     Returns:
-        Tuple[bool, str]: (is_valid, error_message)
+        tuple[bool, str]: (is_valid, error_message)
     """
-    # set strictness - will want to move this to the config
-    strict = False
-    # Check for potentially dangerous imports
-    dangerous_imports = [
-        'os.system', 'subprocess.call', 'subprocess.run', 'eval', 'exec',
-        '__import__', 'importlib', 'pty', 'popen'
-    ]
-    if strict:
-        for imp in dangerous_imports:
-            if imp.lower() in code.lower():
-                raise CodeValidationError(f"Potentially unsafe code pattern detected: {imp}")
-            
-    # Check for reasonable line lengths
-    max_line_length = 500
-    for line in code.splitlines():
-        if len(line) > max_line_length:
-            raise CodeValidationError(f"Line exceeds maximum length of {max_line_length} characters")
-            
-    # Check for valid encoding
     try:
-        code.encode('utf-8')
-    except UnicodeEncodeError:
-        raise CodeValidationError("Invalid character encoding detected")
+        # set strictness - will want to move this to the config
+        strict = False
+        # Check for potentially dangerous imports
+        dangerous_imports = [
+            'os.system', 'subprocess.call', 'subprocess.run', 'eval', 'exec',
+            '__import__', 'importlib', 'pty', 'popen'
+        ]
+        if strict:
+            for imp in dangerous_imports:
+                if imp.lower() in code.lower():
+                    return False, f"Potentially unsafe code pattern detected: {imp}"
+                
+        # Check for reasonable line lengths
+        max_line_length = 500
+        for line in code.splitlines():
+            if len(line) > max_line_length:
+                return False, f"Line exceeds maximum length of {max_line_length} characters"
+                
+        # Check for valid encoding
+        try:
+            code.encode('utf-8')
+        except UnicodeEncodeError:
+            return False, "Invalid character encoding detected"
+            
+        return True, ""
+        
+    except Exception as e:
+        return False, f"Validation error: {str(e)}"
 
 def sanitize_input(text: str) -> str:
     """
