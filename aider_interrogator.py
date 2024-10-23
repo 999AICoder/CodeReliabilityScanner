@@ -9,6 +9,10 @@ import signal
 import time
 from pathlib import Path
 import tempfile
+from typing import Optional
+from tenacity import retry, stop_after_attempt, wait_exponential
+
+from exceptions import AiderTimeoutError, AiderProcessError, MaxRetriesExceededError
 
 from config import Config
 from logger import Logger
@@ -25,6 +29,11 @@ class AiderInterrogator(AiderRunner):
         super().__init__(config, command_runner, logger)
         self.db = SuggestionDB()
 
+    @retry(
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=1, min=4, max=10),
+        reraise=True
+    )
     def ask_question(self, code: str, question: str) -> str:
         """
         Ask Aider a question about the given code.
@@ -78,7 +87,7 @@ class AiderInterrogator(AiderRunner):
                 while True:
                     if time.time() - start_time > timeout:
                         os.killpg(os.getpgid(process.pid), signal.SIGTERM)
-                        raise TimeoutError(f"Aider process timed out after {timeout} seconds")
+                        raise AiderTimeoutError(f"Aider process timed out after {timeout} seconds")
                         
                     try:
                         output = process.stdout.readline()
@@ -107,9 +116,12 @@ class AiderInterrogator(AiderRunner):
 
                 return response.strip()
 
-        except subprocess.CalledProcessError as e:
+        except (subprocess.CalledProcessError, AiderTimeoutError) as e:
             self.logger.error(f"Failed to get response from Aider: {e}")
-            return f"Error: {e}"
+            raise AiderProcessError(f"Failed to get response from Aider: {e}")
+        except MaxRetriesExceededError:
+            self.logger.error("Maximum retries exceeded for Aider process")
+            raise
         finally:
             # Ensure temporary file is always deleted, even if an exception occurs
             if temp_file_path and temp_file_path.exists():

@@ -1,5 +1,6 @@
 import os
-from flask import Flask, request, render_template, abort
+from flask import Flask, request, render_template, abort, jsonify
+from exceptions import AiderTimeoutError, AiderProcessError, CodeValidationError, MaxRetriesExceededError
 from flask_wtf import CSRFProtect
 from flask_wtf.csrf import CSRFError
 from flask_talisman import Talisman
@@ -123,8 +124,24 @@ def index():
             
         except Exception as e:
             app.logger.error(f"Error processing request: {str(e)}")
-            return render_template('error.html', 
-                                error="An error occurred while processing your request"), 500
+            error_message = "An unexpected error occurred"
+            status_code = 500
+            
+            if isinstance(e, AiderTimeoutError):
+                error_message = "The request timed out. Please try again with a smaller code sample."
+                status_code = 408
+            elif isinstance(e, CodeValidationError):
+                error_message = str(e)
+                status_code = 400
+            elif isinstance(e, AiderProcessError):
+                error_message = "Failed to process the code. Please try again."
+                status_code = 500
+            elif isinstance(e, MaxRetriesExceededError):
+                error_message = "Maximum retries exceeded. Please try again later."
+                status_code = 503
+                
+            app.logger.error(f"Error processing request: {str(e)}")
+            return render_template('error.html', error=error_message), status_code
     
     return render_template('index.html')
 

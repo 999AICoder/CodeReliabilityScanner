@@ -1,8 +1,9 @@
 """Input validation utilities for the application."""
 import re
 from typing import Tuple
+from exceptions import CodeValidationError
 
-def validate_code_safety(code: str) -> Tuple[bool, str]:
+def validate_code_safety(code: str) -> None:
     """
     Validate code for potentially unsafe patterns.
     
@@ -22,21 +23,19 @@ def validate_code_safety(code: str) -> Tuple[bool, str]:
     if strict:
         for imp in dangerous_imports:
             if imp.lower() in code.lower():
-                return False, f"Potentially unsafe code pattern detected: {imp}"
+                raise CodeValidationError(f"Potentially unsafe code pattern detected: {imp}")
             
     # Check for reasonable line lengths
     max_line_length = 500
     for line in code.splitlines():
         if len(line) > max_line_length:
-            return False, f"Line exceeds maximum length of {max_line_length} characters"
+            raise CodeValidationError(f"Line exceeds maximum length of {max_line_length} characters")
             
     # Check for valid encoding
     try:
         code.encode('utf-8')
     except UnicodeEncodeError:
-        return False, "Invalid character encoding detected"
-        
-    return True, ""
+        raise CodeValidationError("Invalid character encoding detected")
 
 def sanitize_input(text: str) -> str:
     """
