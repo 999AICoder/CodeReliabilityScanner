@@ -104,7 +104,7 @@ class AiderInterrogator(AiderRunner):
             bufsize=1,
             universal_newlines=True,
             env=env,
-            preexec_fn=os.setsid,  # Create new process group
+            start_new_session=True,  # Safer alternative to preexec_fn
         ) as process:
             return self._process_aider_output(process, timeout)
 
@@ -120,7 +120,10 @@ class AiderInterrogator(AiderRunner):
 
         while True:
             if time.time() - start_time > timeout:
-                os.killpg(os.getpgid(process.pid), signal.SIGTERM)
+                process.terminate()
+                process.wait(timeout=5)  # Wait for up to 5 seconds for the process to terminate
+                if process.poll() is None:
+                    process.kill()  # Force kill if it doesn't terminate
                 raise AiderTimeoutError(f"Aider process timed out after {timeout} seconds")
 
             try:
