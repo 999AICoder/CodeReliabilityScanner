@@ -17,3 +17,4 @@ aider-chat==0.59.1
 google-cloud-secret-manager==2.19.0
 typing==3.7.4.3
 tenacity==9.0.0
+psutil==6.1.0

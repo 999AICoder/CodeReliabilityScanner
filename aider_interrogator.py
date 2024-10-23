@@ -9,7 +9,6 @@ import signal
 import time
 from pathlib import Path
 import tempfile
-from typing import Optional
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 from exceptions import AiderTimeoutError, AiderProcessError, MaxRetriesExceededError
@@ -20,6 +19,7 @@ from command_runner import CommandRunner
 from aider_runner import AiderRunner
 from suggestion_db import SuggestionDB
 from resource_manager import ResourceManager
+
 
 class AiderInterrogator(AiderRunner):
     """
@@ -35,7 +35,7 @@ class AiderInterrogator(AiderRunner):
     @retry(
         stop=stop_after_attempt(3),
         wait=wait_exponential(multiplier=1, min=4, max=10),
-        reraise=True
+        reraise=True,
     )
     def ask_question(self, code: str, question: str) -> str:
         """
@@ -51,31 +51,37 @@ class AiderInterrogator(AiderRunner):
         # Check rate limiting before making API call
         if not self.resource_manager.check_rate_limit():
             raise AiderProcessError("API rate limit exceeded. Please try again later.")
-            
+
         self.logger.info(f"Asking Aider: {question}")
         env = self.command_runner.activate_virtualenv()
-        env['COLUMNS'] = '100'
+        env["COLUMNS"] = "100"
 
         temp_file_path = None
         try:
             # Create temporary file using context manager
-            with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as temp_file:
+            with tempfile.NamedTemporaryFile(
+                mode="w", suffix=".py", delete=False
+            ) as temp_file:
                 temp_file.write(code)
                 temp_file_path = Path(temp_file.name)
 
             aider_command = [
                 "aider",
-                "--chat-mode", "ask",
-                "--message", question,
-                "--model", self.config.aider_model,
-                "--weak-model", self.config.aider_weak_model,
+                "--chat-mode",
+                "ask",
+                "--message",
+                question,
+                "--model",
+                self.config.aider_model,
+                "--weak-model",
+                self.config.aider_weak_model,
                 "--cache-prompts",
                 str(temp_file_path),
             ]
-            
+
             # Set timeout for the entire process
             timeout = 300  # 5 minutes
-            
+
             with subprocess.Popen(
                 aider_command,
                 cwd=self.config.repo_path,
@@ -86,7 +92,7 @@ class AiderInterrogator(AiderRunner):
                 bufsize=1,
                 universal_newlines=True,
                 env=env,
-                preexec_fn=os.setsid  # Create new process group
+                preexec_fn=os.setsid,  # Create new process group
             ) as process:
                 response = ""
                 capture_output = False
@@ -94,8 +100,10 @@ class AiderInterrogator(AiderRunner):
                 while True:
                     if time.time() - start_time > timeout:
                         os.killpg(os.getpgid(process.pid), signal.SIGTERM)
-                        raise AiderTimeoutError(f"Aider process timed out after {timeout} seconds")
-                        
+                        raise AiderTimeoutError(
+                            f"Aider process timed out after {timeout} seconds"
+                        )
+
                     try:
                         output = process.stdout.readline()
                         if output == "" and process.poll() is not None:
@@ -119,7 +127,12 @@ class AiderInterrogator(AiderRunner):
                     self.logger.error(f"Aider errors: {stderr}")
 
                 # Store the response in the database
-                self.db.add_suggestion("in_memory_code", question, {"response": response.strip()}, self.config.aider_model)
+                self.db.add_suggestion(
+                    "in_memory_code",
+                    question,
+                    {"response": response.strip()},
+                    self.config.aider_model,
+                )
 
                 return response.strip()
 
@@ -135,6 +148,7 @@ class AiderInterrogator(AiderRunner):
                 self.resource_manager.register_temp_file(temp_file_path)
                 self.resource_manager.cleanup_resources()
 
+
 class AgentComponents:
     """A class that initializes and holds various components used by the Agent."""
 
@@ -142,6 +156,7 @@ class AgentComponents:
         self.command_runner = CommandRunner(config, logger)
         self.aider_interrogator = AiderInterrogator(config, self.command_runner, logger)
         self.logger = logger
+
 
 class Agent:
     """Manages the interrogation of Python code using Aider."""
