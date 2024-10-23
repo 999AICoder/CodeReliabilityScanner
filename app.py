@@ -52,8 +52,8 @@ def validate_input(code: str, question: str) -> tuple[bool, str]:
     """Validate the input data."""
     if not code or not code.strip():
         return False, "Code cannot be empty"
-    if not question or not question.strip():
-        return False, "Question cannot be empty"
+    #if not question or not question.strip():
+    #    return False, "Question cannot be empty"
     if len(code) > MAX_CODE_LENGTH:
         return False, f"Code exceeds maximum length of {MAX_CODE_LENGTH} characters"
     if len(question) > MAX_QUESTION_LENGTH:
@@ -80,8 +80,8 @@ def index():
     if request.method == 'POST':
         try:
             code = request.form.get('code', '').strip()
-            question = request.form.get('question', '').strip()
-            
+            # question = request.form.get('question', '').strip()
+            question = "As the worlds greatest developer what reliability concerns to you see in the code provided?"
             # Validate input
             is_valid, error_message = validate_input(code, question)
             if not is_valid:
