@@ -15,3 +15,5 @@ ruff==0.3.5
 uvicorn==0.32.0
 aider-chat==0.59.1
 google-cloud-secret-manager==2.19.0
+typing==3.7.4.3
+tenacity==9.0.0
