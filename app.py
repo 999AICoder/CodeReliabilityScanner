@@ -99,7 +99,7 @@ def handle_request_too_large(e):
     return render_template('error.html', error="File too large"), 413
 
 @app.route('/', methods=['GET', 'POST'])
-def index():
+def analyze():
     if request.method == 'POST':
         try:
             code = request.form.get('code', '').strip()
