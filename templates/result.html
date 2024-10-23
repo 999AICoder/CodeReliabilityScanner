@@ -33,10 +33,10 @@
                 {% else %}
                 <h5 class="card-title">Response:</h5>
                 {% endif %}
-                <pre class="card-text">{{ response }}</pre>
+                <pre class="card-text">{{ response|safe }}</pre>
                 
                 <h5 class="card-title mt-4">Code:</h5>
-                <pre><code class="language-python">{{ code }}</code></pre>
+                <pre><code class="language-python">{{ code|safe }}</code></pre>
             </div>
         </div>
         <a href="{{ url_for('index') }}" class="btn btn-primary mt-3">Process Another File</a>
