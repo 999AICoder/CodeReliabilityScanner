@@ -1,8 +1,20 @@
+import os
+import html
 from flask import Flask, render_template, request, jsonify, redirect, url_for
 import requests
 import argparse
 from datetime import datetime
 from flask_wtf.csrf import CSRFProtect
+from validators import validate_input
+from config import Config
+from aider_interrogator import Agent
+from exceptions import AiderTimeoutError, AiderProcessError, CodeValidationError, MaxRetriesExceededError
+
+def get_config_path():
+    """Get the appropriate config file path based on environment."""
+    if os.environ.get('DOCKER_ENV'):
+        return 'config_docker.yaml'
+    return 'config_local.yaml'
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your-secret-key-here'  # In production, use a secure secret key
