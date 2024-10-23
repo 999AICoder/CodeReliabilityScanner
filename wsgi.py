@@ -1,3 +1,1 @@
-from app import create_app
-
-app = create_app()
+from app import app  # Import the existing app instance instead of create_app
