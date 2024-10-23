@@ -2,8 +2,11 @@ from flask import Flask, render_template, request, jsonify, redirect, url_for
 import requests
 import argparse
 from datetime import datetime
+from flask_wtf.csrf import CSRFProtect
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = 'your-secret-key-here'  # In production, use a secure secret key
+csrf = CSRFProtect(app)
 
 @app.route('/')
 def index():
