@@ -40,7 +40,9 @@ class ResourceManager:
                 memory_percent = self.process.memory_percent()
                 cpu_percent = self.process.cpu_percent()
                 
-                if memory_percent > (self.config.max_memory_mb * 100 / psutil.virtual_memory().total):
+                # Only warn if memory usage exceeds 80% of max_memory_mb
+                max_memory_percent = (self.process.memory_info().rss / (self.config.max_memory_mb * 1024 * 1024)) * 100
+                if max_memory_percent > 80:
                     self.logger.warning(f"Memory usage too high: {memory_percent:.1f}%")
                     self.cleanup_resources()
                     
