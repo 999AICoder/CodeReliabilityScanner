@@ -3,96 +3,218 @@
 ## Overview
 This tool is designed to analyze and improve the quality of Python code repositories. It uses various linters, static code analysis tools, and AI-powered suggestions to identify and fix potential issues in your codebase.
 
-This code is considered alpha as of 2014-10-18
+This code is considered alpha as of 2024-10-23
 
 98% of this code was written by [aider](https://github.com/Aider-AI/aider) 
+
+## Requirements
+- Python 3.12 or higher
+- Git
+- Virtual environment (recommended)
+- SQLite3
+
+## Core Components
+- `agent_v2.py`: Main agent for processing Python files
+- `aider_runner.py`: Runs Aider to fix code issues
+- `command_runner.py`: Executes system commands securely
+- `config.py`: Configuration management with validation
+- `file_processor.py`: Processes individual files
+- `git_manager.py`: Handles Git operations
+- `issue_processor.py`: Analyzes and groups code issues
+- `linter_runner.py`: Runs various code linters
+- `logger.py`: Centralized logging system
+- `resource_manager.py`: Manages system resources
+- `suggestion_db.py`: SQLite database management
+- `suggestion_api.py`: FastAPI-based suggestion API
+- `suggestion_cli.py`: CLI interface
+- `suggestion_web.py`: Flask web interface
 
 ## Features
 - Scans Python files in a git repository
 - Runs multiple linters (Pylint, Flake8, Ruff)
 - Processes and groups issues by type and function
 - Uses AI (via Aider) to suggest and apply fixes
-- Provides a web interface and CLI for managing suggestions
+- Provides secure web and CLI interfaces
 - Supports running tests to validate fixes
 - Allows interrogation of specific files using AI
+- Resource monitoring and management
+- Rate limiting and error handling
+- Secure input validation and sanitization
 
-## Components
-- `agent_v2.py`: Main agent for processing Python files
-- `aider_runner.py`: Runs Aider to fix code issues
-- `linter_runner.py`: Executes various linters on Python files
-- `issue_processor.py`: Processes and groups identified issues
-- `suggestion_api.py`: API for managing suggestions
-- `suggestion_cli.py`: CLI for interacting with suggestions
-- `suggestion_web.py`: Web interface for managing suggestions
-- `aider_interrogator.py`: Script for interrogating specific files using AI
+## Installation
 
-## How to Use
-
-0. Install aider-chat
-   You can do this in either a virtual environment for this project or
-   at globally depending on your preference. See config.yaml info below
-   ```
-   pip install aider-chat
+1. Install aider-chat:
+   ```bash
+   pip install aider-chat==0.60.0
    ```
 
-1. Install the required dependencies:
-   We highly recommend you create a virtual environment for these dependencies
-   and once you have activated it run the following command.
-   ```
-   pip install -r requirements.txt
-   ```
-
-2. Copy the configuration file and update the variables:
-   ```
-   cp config_example.yaml config.yaml
-   ```
-   Open `config.yaml` in a text editor and update the variables according to your setup.
-
-3. To interrogate a specific file using AI:
-   ```
-   python aider_interrogator.py --file /path/to/file.py --question "Your question about the file"
+2. Create and activate a virtual environment:
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
    ```
 
-4. Use the CLI or web interface to manage review aider_interrogator.py suggestions:
+3. Install dependencies:
+   - For local development:
+     ```bash
+     pip install -r requirements.txt
+     ```
+   - For Docker deployment:
+     ```bash
+     pip install -r requirements.docker.txt
+     ```
 
-   Start the api server:
-   ```
-   uvicorn suggestion_api:app
-   ```
+## Configuration
 
-   Then use either the web or cli interface to review suggestions
-   ```
-   python suggestion_cli.py
-   ```
-   or
-   ```
-   python suggestion_web.py
-   ```
+### Local Development
+```bash
+cp config_example.yaml config_local.yaml
+```
 
-   You can delete a suggestion on the details page in the web interface.
+### Docker Deployment
+```bash
+cp config_example.yaml config_docker.yaml
+```
 
-   To delete a suggestion using the cli interface use:
-   ```
-   python suggestion_cli.py --delete <id>
-   ```
+### Key Configuration Options
+- `REPO_PATH`: Path to Git repository
+- `VENV_PATH`: Virtual environment path
+- `TEST_COMMAND`: Command to run tests
+- `MAX_LINE_LENGTH`: Maximum line length for code
+- `LINTER`: Choice of linter (pylint/flake8/ruff)
+- `AIDER_MODEL`: AI model selection
+- `MAX_CODE_LENGTH`: Maximum code size
+- `MAX_MEMORY_MB`: Memory limit
+- `API_RATE_LIMIT`: API call limit
 
-5. Run the automated agent: EXPERIMENTAL - not recommended for critical code
-   This script will scan the Python files in the specified repository, run linters, process issues, and modify files using aider. 
-   ```
-   python agent_v2.py /path/to/your/repo
-   ```
+## Resource Management
+- Memory limit: Configurable via MAX_MEMORY_MB
+- CPU usage monitoring
+- Automatic temp file cleanup
+- API rate limiting
+- Database connection management
+- Request size limits
 
-## Aider Interrogator
-The `aider_interrogator.py` script allows you to ask questions about specific files in your repository using AI. It uses the Aider tool to analyze the file and provide insights based on your questions. This can be useful for understanding complex code, identifying potential issues, or getting suggestions for improvements.
+## Security Features
+- Input validation and sanitization
+- CSRF protection
+- Content Security Policy
+- Request size limits
+- Secure cookie handling
+- XSS protection
+- Rate limiting
+- Resource monitoring
 
-To use the Aider Interrogator:
-1. Ensure you have set up the `config.yaml` file correctly, especially the Aider-related settings.
-2. Run the script with the `--file` argument pointing to the file you want to interrogate, and the `--question` argument containing your question about the file.
-3. The script will use Aider to analyze the file and provide a response to your question.
-4. The question and response will be stored in a local database for future reference.
+## Database
+The application uses SQLite3 for storing:
+- Code analysis suggestions
+- AI responses
+- File metadata
+- Timestamps
 
-## Customization
-You can extend the various components (e.g., `LinterRunner`, `IssueProcessor`) to add more checks or modify the processing logic according to your project's needs.
+Database file: `suggestions.db`
+Maintenance: Automatic cleanup based on configured thresholds
 
-## Note
-This tool is under active development. Please refer to individual component documentation for more detailed usage instructions.
+## Web Interface
+Start the web server:
+```bash
+python app.py
+```
+Access at http://localhost:8080
+
+Available pages:
+- `/`: Code analysis input
+- `/suggestions`: Previous analyses
+- `/suggestion/<id>`: Detailed view
+- `/analyze`: New analysis
+
+## API Server
+Start the API:
+```bash
+uvicorn suggestion_api:app --host 0.0.0.0 --port 8000
+```
+
+## Command Line Tools
+
+### Aider Interrogator
+```bash
+python aider_interrogator.py --file /path/to/file.py --question "Your question"
+```
+
+### Suggestion Management
+```bash
+python suggestion_cli.py [--id <id>] [--delete <id>] [--highlight]
+```
+
+### Automated Agent
+```bash
+python agent_v2.py [--debug] [--max-workers <n>] [--file <path>]
+```
+
+## Environment Variables
+- `DOCKER_ENV`: Set to 1 for Docker
+- `FLASK_SECRET_KEY`: Flask security key
+- `FLASK_ENV`: development/production
+- `AIDER_API_KEY`: Aider API key
+- `GOOGLE_CLOUD_PROJECT`: GCP project ID
+
+## Error Handling
+Common errors and solutions:
+- Timeout: Reduce code size or increase timeout
+- Rate limit: Wait and retry
+- Resource limit: Increase limits or reduce load
+- Validation: Check input requirements
+- Database: Check permissions and space
+
+Automatic retries implemented for:
+- API calls
+- Database operations
+- Command execution
+
+## Logging
+Logs include:
+- Timestamp
+- Log level
+- File and line number
+- Message
+
+Log levels:
+- INFO: Normal operations
+- ERROR: Failures and exceptions
+- DEBUG: Detailed debugging (when enabled)
+
+## Testing
+Run tests:
+```bash
+python -m pytest
+```
+
+Test coverage includes:
+- Unit tests
+- Integration tests
+- Resource management tests
+- Security tests
+
+## Docker Deployment
+```bash
+docker build -t code-quality-tool .
+docker run -p 8080:8080 -p 8000:8000 code-quality-tool
+```
+
+## Development
+This tool is under active development. Contributions welcome!
+
+### Best Practices
+- Run tests before commits
+- Check resource usage
+- Monitor logs
+- Review security settings
+- Keep dependencies updated
+
+## Support
+For issues and questions:
+- Check logs
+- Review configuration
+- Verify dependencies
+- Check resource usage
+- Review documentation
