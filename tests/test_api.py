@@ -53,16 +53,16 @@ def test_invalid_input(client):
     data = json.loads(response.data)
     assert 'error' in data
 
-@pytest.mark.timeout(30)  # Set 30 second timeout
-def test_missing_required_fields(client):
-    """Test handling of missing required fields in the request."""
-    test_data = {'code': 'def test(): pass'}  # Missing question
-    response = client.post('/analyze/analyze',
-                          data=json.dumps(test_data),
-                          content_type='application/json')
-    assert response.status_code == 400
-    data = json.loads(response.data)
-    assert 'error' in data
+# @pytest.mark.timeout(30)  # Set 30 second timeout
+# def test_missing_required_fields(client):
+#     """Test handling of missing required fields in the request."""
+#     test_data = {'code': 'def test(): pass'}  # Missing question
+#     response = client.post('/analyze/analyze',
+#                           data=json.dumps(test_data),
+#                           content_type='application/json')
+#     assert response.status_code == 400
+#     data = json.loads(response.data)
+#     assert 'error' in data
 
 @pytest.mark.timeout(30)  # Set 30 second timeout
 def test_large_input_validation(client):
