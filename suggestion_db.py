@@ -50,7 +50,10 @@ class SuggestionDB:
         """Get a database connection."""
         if self.db_path == ':memory:':
             return self._conn
-        return sqlite3.connect(self.db_path)
+        else:
+            conn = sqlite3.connect(self.db_path)
+            conn.row_factory = sqlite3.Row
+            return conn
 
     def _verify_table(self, conn):
         """Verify that the suggestions table exists."""
@@ -84,17 +87,21 @@ class SuggestionDB:
 
     def add_suggestion(self, file: str, question: str, response: Dict, model: str):
         self.logger.info(f"Adding suggestion for file: {file}")
-        with self._get_connection() as conn:
-            try:
-                conn.execute(
-                    "INSERT INTO suggestions (file, question, response, model, timestamp) VALUES (?, ?, ?, ?, ?)",
-                    (file, question, json.dumps(response), model, datetime.now().isoformat())
-                )
-                conn.commit()  # Explicitly commit the transaction
-                self.logger.info("Successfully added suggestion")
-            except sqlite3.Error as e:
-                self.logger.error(f"Error adding suggestion: {e}")
-                raise
+        conn = self._get_connection()
+        try:
+            conn.execute(
+                "INSERT INTO suggestions (file, question, response, model, timestamp) VALUES (?, ?, ?, ?, ?)",
+                (file, question, json.dumps(response), model, datetime.now().isoformat())
+            )
+            conn.commit()
+            self.logger.info("Successfully added suggestion")
+        except sqlite3.Error as e:
+            self.logger.error(f"Error adding suggestion: {e}")
+            conn.rollback()
+            raise
+        finally:
+            if self.db_path != ':memory:':
+                conn.close()
 
     def get_suggestions(self, file: str = None) -> List[Dict]:
         with self._get_connection() as conn:
