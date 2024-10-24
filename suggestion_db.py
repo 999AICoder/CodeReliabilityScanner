@@ -18,6 +18,12 @@ class SuggestionDB:
             if db_dir and not os.path.exists(db_dir):
                 os.makedirs(db_dir)
 
+        # For in-memory database, maintain a single connection
+        if self.db_path == ':memory:':
+            self._conn = sqlite3.connect(self.db_path)
+        else:
+            self._conn = None
+
         # Initialize database and create table
         with self._get_connection() as conn:
             try:
@@ -42,6 +48,8 @@ class SuggestionDB:
 
     def _get_connection(self):
         """Get a database connection."""
+        if self.db_path == ':memory:':
+            return self._conn
         return sqlite3.connect(self.db_path)
 
     def _verify_table(self, conn):
