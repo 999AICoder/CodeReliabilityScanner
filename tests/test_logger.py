@@ -3,7 +3,10 @@ import pytest
 import logging
 import logging.handlers
 import time
+import sys
 from pathlib import Path
+# Add the directory containing agent_v2.py to the PYTHONPATH
+sys.path.append(str(Path(__file__).resolve().parent.parent))
 from logger import Logger
 
 def test_logger_initialization():
