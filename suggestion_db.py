@@ -45,7 +45,9 @@ class SuggestionDB:
             raise
 
     def _get_connection(self):
-        """Get a database connection."""
+        """Get a database connection, reconnecting if needed."""
+        if not self._conn:
+            self._initialize_db()
         return self._conn
 
     def _verify_table(self, conn):
