@@ -30,6 +30,7 @@ def get_config():
         raise ValueError(f"Missing required configuration: {str(e)}")
 
 def handle_analyzer_error(e):
+    """Handle errors that occur during code analysis."""
     error_message = str(e) or "An unexpected error occurred"
     status_code = getattr(e, 'status_code', 500)
     
