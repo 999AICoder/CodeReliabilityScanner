@@ -12,6 +12,7 @@ import json
 def client():
     app.config['TESTING'] = True
     app.config['SERVER_NAME'] = 'localhost'
+    app.config['WTF_CSRF_ENABLED'] = False  # Disable CSRF for testing
     with app.test_client() as client:
         with app.app_context():
             print("\nRegistered routes:")
@@ -43,7 +44,7 @@ def test_invalid_input(client):
         'code': 'invalid python code }',
         'question': 'What?'
     }
-    response = client.post('/analyze', 
+    response = client.post('/analyze/analyze',
                           data=json.dumps(test_data),
                           content_type='application/json')
     assert response.status_code == 400

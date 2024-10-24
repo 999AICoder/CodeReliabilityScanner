@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template
+from flask import Flask, render_template, request, jsonify
 from flask_wtf.csrf import CSRFProtect, CSRFError
 from flask_talisman import Talisman
 from werkzeug.exceptions import RequestEntityTooLarge
@@ -35,7 +35,7 @@ def create_base_app():
     # Register error handlers
     @app.errorhandler(CSRFError)
     def handle_csrf_error(e):
-        if request.content_type == 'application/json':
+        if request and request.content_type == 'application/json':
             return jsonify({'error': 'CSRF token validation failed'}), 400
         return render_template('error.html', error="CSRF token validation failed"), 400
 
