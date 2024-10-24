@@ -77,7 +77,7 @@ def test_large_input_validation(client):
         'code': 'x' * 1000000,  # Very large code input
         'question': 'What does this do?'
     }
-    with app.test_request_context():
+    with client.application.test_request_context():
         url = url_for('analyzer.analyze')
     response = client.post(url,
                          data=json.dumps(test_data),
