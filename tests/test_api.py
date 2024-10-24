@@ -1,5 +1,9 @@
 import pytest
 from flask.testing import FlaskClient
+import sys
+from pathlib import Path
+# Add the directory containing agent_v2.py to the PYTHONPATH
+sys.path.append(str(Path(__file__).resolve().parent.parent))
 from app import app
 import json
 
