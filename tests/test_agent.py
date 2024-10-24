@@ -58,6 +58,10 @@ def test_run(mock_open):
                 "TEST_COMMAND": ["python", "-m", "pytest"],
                 "AIDER_PATH": os.path.join(temp_dir, "aider"),
                 "MAX_LINE_LENGTH": 100,
+                "LANGUAGE_MAX_LENGTHS": {
+                    "default": 50000,
+                    "python": 50000
+                }
             }
             mock_path_exists.return_value = True
             mock_is_git_repo.return_value = True
@@ -165,7 +169,11 @@ def test_run_with_different_file_sizes(file_count, line_count, expected_process_
             "LINTER": "pylint",
             "LINE_COUNT_MAX": 20,
             "LINE_COUNT_MIN": 10,
-            "ENABLE_BLACK": True
+            "ENABLE_BLACK": True,
+            "LANGUAGE_MAX_LENGTHS": {
+                "default": 50000,
+                "python": 50000
+            }
         }
         with open(config_path, 'w') as f:
             yaml.dump(config_data, f)

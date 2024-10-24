@@ -34,7 +34,11 @@ def valid_config_file():
         'LOG_DIR': 'logs',
         'LOG_MAX_BYTES': 10485760,
         'LOG_BACKUP_COUNT': 5,
-        'LOG_MAX_AGE_DAYS': 30
+        'LOG_MAX_AGE_DAYS': 30,
+        'LANGUAGE_MAX_LENGTHS': {
+            'default': 50000,
+            'python': 50000
+        }
     }
     
     with tempfile.NamedTemporaryFile(mode='w', suffix='.yml', delete=False) as f:
