@@ -62,6 +62,14 @@ def validate_input(code: str, question: str, language: str = None) -> Tuple[bool
     if not code or not code.strip():
         return False, "Code cannot be empty"
 
+    # Basic structural validation
+    if code.count('{') != code.count('}'):
+        return False, "Mismatched braces in code"
+    if code.count('(') != code.count(')'):
+        return False, "Mismatched parentheses in code"
+    if code.count('[') != code.count(']'):
+        return False, "Mismatched brackets in code"
+
     # Detect language if not provided
     if not language:
         language = detect_language(code)
