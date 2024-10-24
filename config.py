@@ -20,6 +20,9 @@ class Config:
         if not isinstance(config, dict):
             raise ValueError(f"Invalid configuration format in {config_path}. Expected a YAML dictionary.")
             
+        if not config:
+            raise ValueError("Missing required configuration")
+            
         # Set default values if not in config
         config['AIDER_MODEL'] = config.get('AIDER_MODEL')
         config['AIDER_WEAK_MODEL'] = config.get('AIDER_WEAK_MODEL')

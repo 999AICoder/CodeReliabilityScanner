@@ -30,6 +30,7 @@ class ConfigSchema:
     db_connection_retries: int = 3
     api_rate_limit: int = 60  # requests per minute
     cleanup_threshold_mb: int = 400
+    log_dir: str = 'logs'
     
     @classmethod
     def validate(cls, config: Dict[str, Any]) -> Dict[str, Any]:
@@ -58,7 +59,8 @@ class ConfigSchema:
             ('DB_CONNECTION_TIMEOUT', int, 30),
             ('DB_CONNECTION_RETRIES', int, 3),
             ('API_RATE_LIMIT', int, 60),
-            ('CLEANUP_THRESHOLD_MB', int, 400)
+            ('CLEANUP_THRESHOLD_MB', int, 400),
+            ('LOG_DIR', str, 'logs')
         ]
         
         for field_name, field_type, default_value in required_fields:
