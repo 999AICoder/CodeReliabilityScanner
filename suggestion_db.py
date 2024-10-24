@@ -1,10 +1,15 @@
 import sqlite3
+import os
 from typing import List, Dict
 import json
 from datetime import datetime
 
 class SuggestionDB:
     def __init__(self, db_path: str = "suggestions.db"):
+        # Ensure the database directory exists
+        db_dir = os.path.dirname(db_path)
+        if db_dir and not os.path.exists(db_dir):
+            os.makedirs(db_dir)
         self.db_path = db_path
         self._create_table()
 

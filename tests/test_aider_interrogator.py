@@ -7,11 +7,13 @@ from exceptions import AiderTimeoutError, AiderProcessError
 from config import Config
 
 @pytest.fixture
-def mock_config():
+def mock_config(tmp_path):
     config = Mock(spec=Config)
     config.aider_model = "test-model"
     config.aider_weak_model = "test-weak-model"
     config.repo_path = Path(".")
+    # Use a temporary directory for the database
+    config.db_path = str(tmp_path / "test.db")
     return config
 
 @pytest.fixture
