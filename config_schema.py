@@ -1,5 +1,5 @@
 """Configuration schema validation module."""
-from typing import Dict, Any
+from typing import Dict, Any, List
 from dataclasses import dataclass
 from pathlib import Path
 
