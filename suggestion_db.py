@@ -16,12 +16,19 @@ class SuggestionDB:
             if db_dir and not os.path.exists(db_dir):
                 os.makedirs(db_dir)
         self.db_path = db_path
-        # Create tables immediately
+        # Create tables immediately and verify they exist
         self._create_table()
+        # Verify table was created
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='suggestions'")
+            if not cursor.fetchone():
+                raise sqlite3.OperationalError("Failed to create suggestions table")
 
     def _create_table(self):
         """Create the suggestions table if it doesn't exist."""
-        with sqlite3.connect(self.db_path) as conn:
+        # Create a new connection specifically for table creation
+        conn = sqlite3.connect(self.db_path)
+        try:
             conn.execute("""
                 CREATE TABLE IF NOT EXISTS suggestions (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -33,6 +40,8 @@ class SuggestionDB:
                 )
             """)
             conn.commit()
+        finally:
+            conn.close()
 
     def add_suggestion(self, file: str, question: str, response: Dict, model: str):
         with sqlite3.connect(self.db_path) as conn:
