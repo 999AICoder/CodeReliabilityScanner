@@ -32,6 +32,7 @@ class SuggestionDB:
                     timestamp DATETIME NOT NULL
                 )
             """)
+            conn.commit()
 
     def add_suggestion(self, file: str, question: str, response: Dict, model: str):
         with sqlite3.connect(self.db_path) as conn:
