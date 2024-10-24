@@ -37,7 +37,7 @@ def test_log_rotation():
 def test_log_cleanup():
     test_log_dir = "test_logs"
     logger = Logger(log_dir=test_log_dir)
-    
+
     # Create some test log files with old timestamps
     log_path = Path(test_log_dir)
     test_files = ["test1.log", "test2.log"]
@@ -47,9 +47,13 @@ def test_log_cleanup():
         # Set access and modified times to 31 days ago
         old_time = time.time() - (31 * 24 * 3600)
         os.utime(file_path, (old_time, old_time))
-    
+            
+    # Also set the app.log file to be old
+    app_log = log_path / "app.log"
+    os.utime(app_log, (old_time, old_time))
+
     Logger.cleanup_old_logs(test_log_dir, max_age_days=30)
-    remaining_files = list(log_path.glob("*.log"))
+    remaining_files = list(log_path.glob("*.log*"))
     assert len(remaining_files) == 0
 
 @pytest.fixture(autouse=True)
