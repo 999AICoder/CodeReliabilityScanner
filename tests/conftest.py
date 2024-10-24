@@ -23,6 +23,14 @@ MAX_CODE_LENGTH: 50000
 MAX_QUESTION_LENGTH: 1000
 MAX_MEMORY_MB: 1000
 API_RATE_LIMIT: 5
+
+LANGUAGE_MAX_LENGTHS:
+    default: 50000
+    python: 50000
+
+DANGEROUS_PATTERNS:
+    default: ['rm -rf', 'sudo', 'chmod']
+    python: ['os.system', 'subprocess']
 """)
     monkeypatch.setenv('PYTEST_CURRENT_TEST', 'True')
     # Set config path before any imports
