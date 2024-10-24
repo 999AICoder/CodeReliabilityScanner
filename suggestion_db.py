@@ -90,6 +90,7 @@ class SuggestionDB:
                     "INSERT INTO suggestions (file, question, response, model, timestamp) VALUES (?, ?, ?, ?, ?)",
                     (file, question, json.dumps(response), model, datetime.now().isoformat())
                 )
+                conn.commit()  # Explicitly commit the transaction
                 self.logger.info("Successfully added suggestion")
             except sqlite3.Error as e:
                 self.logger.error(f"Error adding suggestion: {e}")
