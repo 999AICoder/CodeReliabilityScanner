@@ -17,19 +17,10 @@ class SuggestionDB:
                 os.makedirs(db_dir)
         self.db_path = db_path
         # Create tables immediately
-        with sqlite3.connect(self.db_path) as conn:
-            conn.execute("""
-                CREATE TABLE IF NOT EXISTS suggestions (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    file TEXT NOT NULL,
-                    question TEXT NOT NULL,
-                    response JSON NOT NULL,
-                    model TEXT NOT NULL,
-                    timestamp DATETIME NOT NULL
-                )
-            """)
+        self._create_table()
 
     def _create_table(self):
+        """Create the suggestions table if it doesn't exist."""
         with sqlite3.connect(self.db_path) as conn:
             conn.execute("""
                 CREATE TABLE IF NOT EXISTS suggestions (
