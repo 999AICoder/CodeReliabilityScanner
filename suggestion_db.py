@@ -23,6 +23,20 @@ class SuggestionDB:
         self._conn = None
         self._initialize_db()
 
+    def __enter__(self):
+        """Context manager entry point."""
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """Context manager exit point - ensure proper cleanup."""
+        if self._conn:
+            try:
+                self._conn.commit()
+                self._conn.close()
+                self._conn = None
+            except Exception as e:
+                self.logger.error(f"Error during database cleanup: {e}")
+
     def _initialize_db(self):
         """Initialize database connection and create table if needed."""
         self._conn = sqlite3.connect(self.db_path)
