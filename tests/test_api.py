@@ -59,8 +59,7 @@ def test_missing_required_fields(client):
     test_data = {'code': 'def test(): pass'}  # Missing question
     response = client.post('/analyze/analyze',
                           data=json.dumps(test_data),
-                          content_type='application/json',
-                          timeout=10)  # Add client timeout
+                          content_type='application/json')
     assert response.status_code == 400
     data = json.loads(response.data)
     assert 'error' in data
