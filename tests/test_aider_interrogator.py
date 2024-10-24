@@ -119,6 +119,9 @@ CLEANUP_THRESHOLD_MB: 400
 LANGUAGE_MAX_LENGTHS:
     default: 50000
     python: 50000
+DANGEROUS_PATTERNS:
+    default: ["rm -rf", "sudo", "chmod"]
+    python: ["os.system", "subprocess"]
 """)
     
     agent = Agent(config_path)
