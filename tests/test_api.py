@@ -23,13 +23,13 @@ def client(app):
             yield client
 
 @pytest.mark.timeout(30)  # Set 30 second timeout
-def test_analyze_endpoint(client, test_config):
+def test_analyze_endpoint(client, app):
     print("\nTesting endpoint:")
     test_data = {
         'code': 'def test(): pass',
         'question': 'What does this do?'
     }
-    with app.test_request_context():
+    with client.application.test_request_context():
         url = url_for('analyzer.analyze')
         print(f"Using URL: {url}")
     
@@ -51,7 +51,7 @@ def test_invalid_input(client):
         'code': 'invalid python code }',
         'question': 'What?'
     }
-    with app.test_request_context():
+    with client.application.test_request_context():
         url = url_for('analyzer.analyze')
     response = client.post(url,
                          data=json.dumps(test_data),
