@@ -16,13 +16,16 @@ class SuggestionDB:
         # Initialize database and create table
         with self._get_connection() as conn:
             try:
-                conn.execute("BEGIN")
                 cursor = conn.cursor()
+                # Create the table
                 cursor.execute(self.CREATE_TABLE_SQL)
+                # Verify table was created
+                cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='suggestions'")
+                if not cursor.fetchone():
+                    raise sqlite3.OperationalError("Failed to create suggestions table")
                 conn.commit()
             except sqlite3.Error as e:
                 print(f"Database initialization error: {e}")
-                conn.rollback()
                 raise
 
     def _get_connection(self):
