@@ -35,6 +35,12 @@ def validate_input(code: str, question: str) -> tuple[bool, str]:
     if len(question) > config.max_question_length:
         return False, f"Question exceeds maximum length of {config.max_question_length} characters"
         
+    # Try to compile the code to check syntax
+    try:
+        compile(code, '<string>', 'exec')
+    except SyntaxError:
+        return False, "Invalid Python syntax"
+        
     # Sanitize inputs
     code = sanitize_input(code)
     question = sanitize_input(question)
