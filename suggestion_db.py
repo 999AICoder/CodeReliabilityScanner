@@ -96,8 +96,7 @@ class SuggestionDB:
                 raise
 
     def get_suggestions(self, file: str = None) -> List[Dict]:
-        conn = self._get_connection()
-        try:
+        with self._get_connection() as conn:
             conn.row_factory = sqlite3.Row
             if file:
                 cursor = conn.execute(
@@ -113,9 +112,6 @@ class SuggestionDB:
                 suggestion['response'] = json.loads(suggestion['response'])
                 results.append(suggestion)
             return results
-        finally:
-            if self.db_path != ':memory:':
-                conn.close()
 
     def get_suggestion(self, suggestion_id: int) -> Dict:
         with self._get_connection() as conn:
