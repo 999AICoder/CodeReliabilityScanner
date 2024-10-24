@@ -41,19 +41,26 @@ class SuggestionDB:
 
     def _initialize_db(self):
         """Initialize database connection and create table if needed."""
-        self._conn = sqlite3.connect(self.db_path)
-        # Enable WAL mode immediately after connection
+        self.logger.info(f"Initializing database connection to: {self.db_path}")
+        self._conn = sqlite3.connect(
+            self.db_path,
+            timeout=30,
+            isolation_level=None,  # Enable autocommit mode
+            check_same_thread=False
+        )
+        
+        # Set pragmas for better reliability
         self._conn.execute('PRAGMA journal_mode=WAL')
+        self._conn.execute('PRAGMA synchronous=NORMAL')
         self._conn.execute('PRAGMA foreign_keys=ON')
+        self._conn.execute('PRAGMA temp_store=MEMORY')
         self._conn.row_factory = sqlite3.Row
 
         try:
-            self.logger.info("Creating database connection and table")
+            self.logger.info("Creating database table if needed")
             cursor = self._conn.cursor()
-            # Create the table
             self.logger.info(f"Executing CREATE TABLE SQL: {self.CREATE_TABLE_SQL}")
             cursor.execute(self.CREATE_TABLE_SQL)
-            # Verify table was created
             self.logger.info("Verifying table creation")
             cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='suggestions'")
             result = cursor.fetchone()
