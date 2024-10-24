@@ -47,7 +47,7 @@ def analyze():
     if request.method == 'POST':
         try:
             code = request.form.get('code', '').strip()
-            question = "As the worlds greatest developer what reliability concerns to you see in the code provided?"
+            question = "As the worlds greatest developer what reliability concerns do you see in the code provided? Do not provide any code in your response"
             
             # Validate input
             is_valid, error_message = validate_input(code, question)

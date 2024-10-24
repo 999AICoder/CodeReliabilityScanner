@@ -15,3 +15,5 @@ MAX_QUESTION_LENGTH: 1000
 MAX_REQUEST_SIZE_MB: 1
 MAX_MEMORY_MB: 1000
 API_RATE_LIMIT: 5
+AIDER_MODEL: 'codestral/codestral-latest'
+AIDER_WEAK_MODEL: 'codestral/codestral-latest'

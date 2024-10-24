@@ -81,6 +81,7 @@ class AiderInterrogator(AiderRunner):
             "--chat-mode",
             "ask",
             "--no-check-update",
+            "--no-show-model-warnings",
             "--message",
             question,
             "--model",
