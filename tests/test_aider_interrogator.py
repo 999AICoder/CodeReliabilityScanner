@@ -1,8 +1,13 @@
 import pytest
 import time
+import sys
 from pathlib import Path
 from unittest.mock import Mock, patch
-from aider_runner import AiderInterrogator
+
+# Add the directory containing agent_v2.py to the PYTHONPATH
+sys.path.append(str(Path(__file__).resolve().parent.parent))
+
+from aider_interrogator import AiderInterrogator
 from agent_v2 import Agent
 from exceptions import AiderTimeoutError, AiderProcessError
 from config import Config
