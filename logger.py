@@ -2,6 +2,7 @@
 
 import logging
 import logging.handlers
+import time
 from pathlib import Path
 
 
@@ -12,6 +13,9 @@ class Logger:
         """Initialize the Logger with a configured logging.Logger instance."""
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(logging.INFO)
+        
+        # Clear any existing handlers
+        self.logger.handlers = []
         
         # Always add stream handler
         stream_handler = logging.StreamHandler()
@@ -50,3 +54,24 @@ class Logger:
             message (str): The error message to be logged.
         """
         self.logger.error(message)
+
+    @staticmethod
+    def cleanup_old_logs(log_dir: str, max_age_days: int = 30) -> None:
+        """
+        Clean up log files older than max_age_days.
+
+        Args:
+            log_dir (str): Directory containing log files
+            max_age_days (int): Maximum age of log files in days
+        """
+        log_path = Path(log_dir)
+        if not log_path.exists():
+            return
+            
+        current_time = time.time()
+        max_age_seconds = max_age_days * 24 * 3600
+        
+        for log_file in log_path.glob("*.log*"):
+            file_age = current_time - log_file.stat().st_mtime
+            if file_age > max_age_seconds:
+                log_file.unlink()
