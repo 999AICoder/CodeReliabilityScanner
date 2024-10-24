@@ -4,10 +4,10 @@ import sys
 from typing import List, Dict
 import json
 from datetime import datetime
-import logging
 from logger import Logger
 
 class SuggestionDB:
+    """A simple SQLite database wrapper for storing code suggestions."""
     def __init__(self, db_path: str = "suggestions.db"):
         self.logger = Logger()
         self.logger.info(f"Initializing SuggestionDB with path: {db_path}")
