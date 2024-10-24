@@ -1,7 +1,10 @@
 import pytest
 import json
+import sys
 from datetime import datetime
 from pathlib import Path
+# Add the directory containing agent_v2.py to the PYTHONPATH
+sys.path.append(str(Path(__file__).resolve().parent.parent))
 from suggestion_db import SuggestionDB
 
 @pytest.fixture
