@@ -14,18 +14,16 @@ class SuggestionDB:
                 os.makedirs(db_dir)
         
         # Initialize database and create table
-        conn = self._get_connection()
-        try:
-            conn.execute("BEGIN")
-            self._create_table(conn)
-            self._verify_table(conn)
-            conn.commit()
-        except sqlite3.Error as e:
-            print(f"Database initialization error: {e}")
-            conn.rollback()
-            raise
-        finally:
-            conn.close()
+        with self._get_connection() as conn:
+            try:
+                conn.execute("BEGIN")
+                cursor = conn.cursor()
+                cursor.execute(self.CREATE_TABLE_SQL)
+                conn.commit()
+            except sqlite3.Error as e:
+                print(f"Database initialization error: {e}")
+                conn.rollback()
+                raise
 
     def _get_connection(self):
         """Get a database connection."""
