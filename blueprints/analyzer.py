@@ -1,6 +1,6 @@
 import os
 import html
-from flask import Blueprint, render_template, request
+from flask import Blueprint, render_template, request, jsonify
 from config import Config
 from aider_interrogator import Agent
 from validators import validate_input
@@ -36,6 +36,8 @@ def handle_analyzer_error(e):
         error_message = "Maximum retries exceeded. Please try again later."
         status_code = 503
     
+    if request.is_json:
+        return jsonify({'error': error_message}), status_code
     return render_template('error.html', error=error_message), status_code
 
 @analyzer.route('/', methods=['GET'])
@@ -46,28 +48,44 @@ def index():
 def analyze():
     if request.method == 'POST':
         try:
-            code = request.form.get('code', '').strip()
-            question = "As the worlds greatest developer what reliability concerns do you see in the code provided? Do not provide any code in your response"
-            
-            # Validate input
-            is_valid, error_message = validate_input(code, question)
-            if not is_valid:
-                return render_template('error.html', error=error_message), 400
-            
-            config = Config(get_config_path())
-            agent = Agent(config)
-            
-            response = agent.interrogate_code(code, question)
-            safe_response = html.escape(response)
-            
-            template_params = {
-                'response': safe_response,
-                'code': html.escape(code)
-            }
-            if not os.environ.get('DOCKER_ENV'):
-                template_params['question'] = html.escape(question)
-            
-            return render_template('result.html', **template_params)
+            if request.is_json:
+                data = request.get_json()
+                code = data.get('code', '').strip()
+                question = data.get('question', '')
+                
+                # Validate input
+                is_valid, error_message = validate_input(code, question)
+                if not is_valid:
+                    return jsonify({'error': error_message}), 400
+                
+                config = Config(get_config_path())
+                agent = Agent(config)
+                
+                response = agent.interrogate_code(code, question)
+                return jsonify({'response': response})
+            else:
+                code = request.form.get('code', '').strip()
+                question = "As the worlds greatest developer what reliability concerns do you see in the code provided? Do not provide any code in your response"
+                
+                # Validate input
+                is_valid, error_message = validate_input(code, question)
+                if not is_valid:
+                    return render_template('error.html', error=error_message), 400
+                
+                config = Config(get_config_path())
+                agent = Agent(config)
+                
+                response = agent.interrogate_code(code, question)
+                safe_response = html.escape(response)
+                
+                template_params = {
+                    'response': safe_response,
+                    'code': html.escape(code)
+                }
+                if not os.environ.get('DOCKER_ENV'):
+                    template_params['question'] = html.escape(question)
+                
+                return render_template('result.html', **template_params)
             
         except Exception as e:
             return handle_analyzer_error(e)
