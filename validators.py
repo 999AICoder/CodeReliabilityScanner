@@ -103,30 +103,33 @@ def validate_code_safety(code: str, language: str, config: Config) -> Tuple[bool
         tuple[bool, str]: (is_valid, error_message)
     """
     try:
-        # set strictness - will want to move this to the config
-        strict = False
-        # Check for potentially dangerous imports
-        dangerous_imports = [
-            'os.system', 'subprocess.call', 'subprocess.run', 'eval', 'exec',
-            '__import__', 'importlib', 'pty', 'popen'
-        ]
-        if strict:
-            for imp in dangerous_imports:
-                if imp.lower() in code.lower():
-                    return False, f"Potentially unsafe code pattern detected: {imp}"
-                
         # Check for reasonable line lengths
-        max_line_length = 500
         for line in code.splitlines():
-            if len(line) > max_line_length:
-                return False, f"Line exceeds maximum length of {max_line_length} characters"
+            if len(line) > config.max_line_length:
+                return False, f"Line exceeds maximum length of {config.max_line_length} characters"
                 
         # Check for valid encoding
         try:
             code.encode('utf-8')
         except UnicodeEncodeError:
             return False, "Invalid character encoding detected"
+                
+        # Check for dangerous patterns
+        code_lower = code.lower()
             
+        # Check default patterns for all languages
+        default_patterns = config.dangerous_patterns.get('default', [])
+        for pattern in default_patterns:
+            if pattern.lower() in code_lower:
+                return False, f"Potentially unsafe code pattern detected: {pattern}"
+            
+        # Check language-specific patterns
+        if language and language in config.dangerous_patterns:
+            lang_patterns = config.dangerous_patterns[language]
+            for pattern in lang_patterns:
+                if pattern.lower() in code_lower:
+                    return False, f"Potentially unsafe {language} code pattern detected: {pattern}"
+                    
         return True, ""
         
     except Exception as e:
