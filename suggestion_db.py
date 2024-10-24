@@ -4,10 +4,13 @@ import sys
 from typing import List, Dict
 import json
 from datetime import datetime
+import logging
 from logger import Logger
 
 class SuggestionDB:
     def __init__(self, db_path: str = "suggestions.db"):
+        self.logger = Logger()
+        self.logger.info(f"Initializing SuggestionDB with path: {db_path}")
 
         self.db_path = ':memory:' if 'pytest' in sys.modules else db_path
         if self.db_path != ':memory:':
@@ -18,16 +21,23 @@ class SuggestionDB:
         # Initialize database and create table
         with self._get_connection() as conn:
             try:
+                self.logger.info("Creating database connection and table")
                 cursor = conn.cursor()
                 # Create the table
+                self.logger.info(f"Executing CREATE TABLE SQL: {self.CREATE_TABLE_SQL}")
                 cursor.execute(self.CREATE_TABLE_SQL)
                 # Verify table was created
+                self.logger.info("Verifying table creation")
                 cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='suggestions'")
-                if not cursor.fetchone():
+                result = cursor.fetchone()
+                self.logger.info(f"Table verification result: {result}")
+                if not result:
+                    self.logger.error("Failed to create suggestions table")
                     raise sqlite3.OperationalError("Failed to create suggestions table")
                 conn.commit()
+                self.logger.info("Table creation successful")
             except sqlite3.Error as e:
-                print(f"Database initialization error: {e}")
+                self.logger.error(f"Database initialization error: {e}")
                 raise
 
     def _get_connection(self):
@@ -65,11 +75,17 @@ class SuggestionDB:
             raise sqlite3.OperationalError(f"Failed to create suggestions table: {e}")
 
     def add_suggestion(self, file: str, question: str, response: Dict, model: str):
+        self.logger.info(f"Adding suggestion for file: {file}")
         with self._get_connection() as conn:
-            conn.execute(
-                "INSERT INTO suggestions (file, question, response, model, timestamp) VALUES (?, ?, ?, ?, ?)",
-                (file, question, json.dumps(response), model, datetime.now().isoformat())
-            )
+            try:
+                conn.execute(
+                    "INSERT INTO suggestions (file, question, response, model, timestamp) VALUES (?, ?, ?, ?, ?)",
+                    (file, question, json.dumps(response), model, datetime.now().isoformat())
+                )
+                self.logger.info("Successfully added suggestion")
+            except sqlite3.Error as e:
+                self.logger.error(f"Error adding suggestion: {e}")
+                raise
 
     def get_suggestions(self, file: str = None) -> List[Dict]:
         with self._get_connection() as conn:
