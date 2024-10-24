@@ -28,7 +28,7 @@ class Logger:
         # Add file handler if log_dir is specified
         if log_dir:
             log_dir = Path(log_dir)
-            log_dir.mkdir(exist_ok=True)
+            log_dir.mkdir(exist_ok=True, parents=True)
             file_handler = logging.handlers.RotatingFileHandler(
                 log_dir / 'app.log',
                 maxBytes=max_bytes,

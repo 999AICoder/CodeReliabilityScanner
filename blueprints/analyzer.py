@@ -48,6 +48,8 @@ def index():
 def analyze():
     if request.method == 'POST':
         try:
+            if not request.is_json and not request.form.get('code'):
+                return jsonify({'error': 'No code provided'}), 400
             if request.is_json:
                 data = request.get_json()
                 code = data.get('code', '').strip()
