@@ -11,49 +11,42 @@ class SuggestionDB:
     def __init__(self, db_path: str = "suggestions.db"):
         self.logger = Logger()
         self.logger.info(f"Initializing SuggestionDB with path: {db_path}")
-
         self.db_path = ':memory:' if 'pytest' in sys.modules else db_path
+        
+        # Create db directory if needed
         if self.db_path != ':memory:':
             db_dir = os.path.dirname(db_path)
             if db_dir and not os.path.exists(db_dir):
                 os.makedirs(db_dir)
 
-        # For in-memory database, maintain a single connection
-        if self.db_path == ':memory:':
-            self._conn = sqlite3.connect(self.db_path)
-        else:
-            self._conn = None
+        # Maintain a single connection for both memory and file-based DBs
+        self._conn = sqlite3.connect(self.db_path)
+        self._conn.row_factory = sqlite3.Row
 
         # Initialize database and create table
-        with self._get_connection() as conn:
-            try:
-                self.logger.info("Creating database connection and table")
-                cursor = conn.cursor()
-                # Create the table
-                self.logger.info(f"Executing CREATE TABLE SQL: {self.CREATE_TABLE_SQL}")
-                cursor.execute(self.CREATE_TABLE_SQL)
-                # Verify table was created
-                self.logger.info("Verifying table creation")
-                cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='suggestions'")
-                result = cursor.fetchone()
-                self.logger.info(f"Table verification result: {result}")
-                if not result:
-                    self.logger.error("Failed to create suggestions table")
-                    raise sqlite3.OperationalError("Failed to create suggestions table")
-                conn.commit()
-                self.logger.info("Table creation successful")
-            except sqlite3.Error as e:
-                self.logger.error(f"Database initialization error: {e}")
-                raise
+        try:
+            self.logger.info("Creating database connection and table")
+            cursor = self._conn.cursor()
+            # Create the table
+            self.logger.info(f"Executing CREATE TABLE SQL: {self.CREATE_TABLE_SQL}")
+            cursor.execute(self.CREATE_TABLE_SQL)
+            # Verify table was created
+            self.logger.info("Verifying table creation")
+            cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='suggestions'")
+            result = cursor.fetchone()
+            self.logger.info(f"Table verification result: {result}")
+            if not result:
+                self.logger.error("Failed to create suggestions table")
+                raise sqlite3.OperationalError("Failed to create suggestions table")
+            self._conn.commit()
+            self.logger.info("Table creation successful")
+        except sqlite3.Error as e:
+            self.logger.error(f"Database initialization error: {e}")
+            raise
 
     def _get_connection(self):
         """Get a database connection."""
-        if self.db_path == ':memory:':
-            return self._conn
-        else:
-            conn = sqlite3.connect(self.db_path)
-            conn.row_factory = sqlite3.Row
-            return conn
+        return self._conn
 
     def _verify_table(self, conn):
         """Verify that the suggestions table exists."""
