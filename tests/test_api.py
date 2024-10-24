@@ -9,8 +9,8 @@ from app import app
 import json
 
 @pytest.fixture
-def test_config(tmp_path):
-    config_path = tmp_path / "test_config.yml"
+def test_config(tmp_path, monkeypatch):
+    config_path = tmp_path / "config_local.yaml"
     with open(config_path, 'w') as f:
         f.write("""
 REPO_PATH: '.'
@@ -36,6 +36,8 @@ API_RATE_LIMIT: 60
 CLEANUP_THRESHOLD_MB: 400
 LOG_DIR: 'logs'
 """)
+    monkeypatch.setenv('PYTEST_CURRENT_TEST', 'True')
+    monkeypatch.setattr('blueprints.analyzer.get_config_path', lambda: str(config_path))
     return config_path
 
 @pytest.fixture
