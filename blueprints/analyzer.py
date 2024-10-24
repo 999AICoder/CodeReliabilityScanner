@@ -21,6 +21,14 @@ def get_config_path():
         return 'config_local.yaml'  # Use local config for tests
     return 'config_local.yaml'
 
+def get_config():
+    """Get configuration instance."""
+    config_path = get_config_path()
+    try:
+        return Config(config_path)
+    except Exception as e:
+        raise ValueError(f"Missing required configuration: {str(e)}")
+
 def handle_analyzer_error(e):
     error_message = str(e) or "An unexpected error occurred"
     status_code = getattr(e, 'status_code', 500)
@@ -65,7 +73,7 @@ def analyze():
                 if not is_valid:
                     return jsonify({'error': error_message}), 400
                 
-                config = Config(get_config_path())
+                config = get_config()
                 agent = Agent(config)
                 
                 response = agent.interrogate_code(code, question)
