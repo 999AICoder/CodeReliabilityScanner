@@ -44,6 +44,10 @@ def handle_analyzer_error(e):
 def index():
     return render_template('index.html')
 
+@analyzer.route('/', methods=['GET'])
+def index():
+    return render_template('index.html')
+
 @analyzer.route('/analyze', methods=['GET', 'POST'])
 def analyze():
     if request.method == 'POST':

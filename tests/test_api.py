@@ -18,7 +18,7 @@ def test_analyze_endpoint(client):
         'code': 'def test(): pass',
         'question': 'What does this do?'
     }
-    response = client.post('/analyzer/analyze', 
+    response = client.post('/analyze', 
                           data=json.dumps(test_data),
                           content_type='application/json')
     assert response.status_code == 200
@@ -30,7 +30,7 @@ def test_invalid_input(client):
         'code': 'invalid python code }',
         'question': 'What?'
     }
-    response = client.post('/analyzer/analyze', 
+    response = client.post('/analyze', 
                           data=json.dumps(test_data),
                           content_type='application/json')
     assert response.status_code == 400
@@ -39,7 +39,7 @@ def test_invalid_input(client):
 
 def test_missing_required_fields(client):
     test_data = {'code': 'def test(): pass'}  # Missing question
-    response = client.post('/analyzer/analyze', 
+    response = client.post('/analyze', 
                           data=json.dumps(test_data),
                           content_type='application/json')
     assert response.status_code == 400
@@ -49,7 +49,7 @@ def test_large_input_validation(client):
         'code': 'x' * 1000000,  # Very large code input
         'question': 'What does this do?'
     }
-    response = client.post('/analyzer/analyze', 
+    response = client.post('/analyze', 
                           data=json.dumps(test_data),
                           content_type='application/json')
     assert response.status_code == 400
