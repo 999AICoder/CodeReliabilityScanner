@@ -38,6 +38,10 @@ def valid_config_file():
         'LANGUAGE_MAX_LENGTHS': {
             'default': 50000,
             'python': 50000
+        },
+        'DANGEROUS_PATTERNS': {
+            'default': ['rm -rf', 'sudo', 'chmod'],
+            'python': ['os.system', 'subprocess']
         }
     }
     

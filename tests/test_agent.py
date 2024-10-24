@@ -61,6 +61,10 @@ def test_run(mock_open):
                 "LANGUAGE_MAX_LENGTHS": {
                     "default": 50000,
                     "python": 50000
+                },
+                "DANGEROUS_PATTERNS": {
+                    "default": ["rm -rf", "sudo", "chmod"],
+                    "python": ["os.system", "subprocess"]
                 }
             }
             mock_path_exists.return_value = True
