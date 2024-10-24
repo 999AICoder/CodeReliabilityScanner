@@ -17,3 +17,59 @@ MAX_QUESTION_LENGTH: 1000
 MAX_REQUEST_SIZE_MB: 1
 MAX_MEMORY_MB: 1000
 API_RATE_LIMIT: 5
+
+# Language settings
+SUPPORTED_LANGUAGES:
+  - python
+  - javascript
+  - java
+  - cpp
+  - csharp
+  - go
+  - rust
+  - typescript
+  - ruby
+  - php
+
+LANGUAGE_MAX_LENGTHS:
+  default: 50000
+  python: 50000
+  javascript: 50000
+  java: 100000
+  cpp: 50000
+  csharp: 75000
+  go: 50000
+  rust: 50000
+  typescript: 50000
+  ruby: 50000
+  php: 50000
+
+DANGEROUS_PATTERNS:
+  default:
+    - "rm -rf"
+    - "format"
+    - "mkfs"
+    - "dd if="
+    - "wget"
+    - "curl"
+    - "> /dev/"
+    - "> /proc/"
+    - "> /sys/"
+    - "sudo"
+    - "chmod"
+    - "chown"
+  python:
+    - "os.system"
+    - "subprocess"
+    - "eval("
+    - "exec("
+    - "__import__"
+  javascript:
+    - "eval("
+    - "Function("
+    - "process.exit"
+    - "require('child_process')"
+  java:
+    - "Runtime.getRuntime()"
+    - "ProcessBuilder"
+    - "System.exit"

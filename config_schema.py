@@ -23,6 +23,11 @@ class ConfigSchema:
     MAX_CODE_LENGTH: int
     MAX_QUESTION_LENGTH: int
     
+    # Language support
+    SUPPORTED_LANGUAGES: List[str]
+    LANGUAGE_MAX_LENGTHS: Dict[str, int]
+    DANGEROUS_PATTERNS: Dict[str, List[str]]
+    
     # Resource management limits
     max_memory_mb: int = 512
     max_cpu_percent: float = 80.0
@@ -72,6 +77,26 @@ class ConfigSchema:
             except (ValueError, TypeError) as e:
                 raise ValueError(f"Invalid configuration for {field_name}: {str(e)}")
         
+        # Validate language-specific configurations
+        supported_languages = config.get('SUPPORTED_LANGUAGES', [])
+        if not isinstance(supported_languages, list):
+            raise ValueError("SUPPORTED_LANGUAGES must be a list")
+        validated['SUPPORTED_LANGUAGES'] = supported_languages
+
+        language_max_lengths = config.get('LANGUAGE_MAX_LENGTHS', {})
+        if not isinstance(language_max_lengths, dict):
+            raise ValueError("LANGUAGE_MAX_LENGTHS must be a dictionary")
+        if 'default' not in language_max_lengths:
+            raise ValueError("LANGUAGE_MAX_LENGTHS must include a 'default' value")
+        validated['LANGUAGE_MAX_LENGTHS'] = language_max_lengths
+
+        dangerous_patterns = config.get('DANGEROUS_PATTERNS', {})
+        if not isinstance(dangerous_patterns, dict):
+            raise ValueError("DANGEROUS_PATTERNS must be a dictionary")
+        if 'default' not in dangerous_patterns:
+            raise ValueError("DANGEROUS_PATTERNS must include a 'default' value")
+        validated['DANGEROUS_PATTERNS'] = dangerous_patterns
+
         # Additional validation rules
         if validated['LINE_COUNT_MIN'] >= validated['LINE_COUNT_MAX']:
             raise ValueError("LINE_COUNT_MIN must be less than LINE_COUNT_MAX")
@@ -81,5 +106,10 @@ class ConfigSchema:
             
         if validated['API_RATE_LIMIT'] < 1:
             raise ValueError("API_RATE_LIMIT must be positive")
+
+        # Validate that all supported languages have corresponding max lengths
+        for lang in supported_languages:
+            if lang not in language_max_lengths and 'default' not in language_max_lengths:
+                raise ValueError(f"Missing max length configuration for language: {lang}")
             
         return validated
