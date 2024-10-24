@@ -35,6 +35,7 @@ DB_CONNECTION_RETRIES: 3
 API_RATE_LIMIT: 60
 CLEANUP_THRESHOLD_MB: 400
 LOG_DIR: 'logs'
+MAX_REQUEST_SIZE_MB: 1
 """)
     monkeypatch.setenv('PYTEST_CURRENT_TEST', 'True')
     monkeypatch.setattr('blueprints.analyzer.get_config_path', lambda: str(config_path))
@@ -63,12 +64,13 @@ def test_analyze_endpoint(client, test_config):
     with app.test_request_context():
         url = url_for('analyzer.analyze')
         print(f"Using URL: {url}")
+    
+    print(f"Sending request with data: {test_data}")
     response = client.post(url,
                           data=json.dumps(test_data),
                           content_type='application/json')
     print(f"Response status: {response.status_code}")
-    if response.status_code != 200:
-        print(f"Response data: {response.data}")
+    print(f"Response data: {response.data.decode()}")
     assert response.status_code == 200
     data = json.loads(response.data)
     assert 'response' in data
