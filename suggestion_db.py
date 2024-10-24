@@ -21,7 +21,7 @@ class SuggestionDB:
 
     def _create_table(self):
         with sqlite3.connect(self.db_path) as conn:
-        conn.execute("""
+            conn.execute("""
                 CREATE TABLE IF NOT EXISTS suggestions (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     file TEXT NOT NULL,
