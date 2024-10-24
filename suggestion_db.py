@@ -13,10 +13,13 @@ class SuggestionDB:
             if db_dir and not os.path.exists(db_dir):
                 os.makedirs(db_dir)
         
-        # Initialize database
-        with self._get_connection() as conn:
+        # Initialize database and create table
+        conn = self._get_connection()
+        try:
             self._create_table(conn)
             self._verify_table(conn)
+        finally:
+            conn.close()
 
     def _get_connection(self):
         """Get a database connection."""
@@ -30,19 +33,25 @@ class SuggestionDB:
         if not cursor.fetchone():
             raise sqlite3.OperationalError("Failed to create suggestions table")
 
+    # SQL for creating the suggestions table
+    CREATE_TABLE_SQL = """
+        CREATE TABLE IF NOT EXISTS suggestions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            file TEXT NOT NULL,
+            question TEXT NOT NULL,
+            response JSON NOT NULL,
+            model TEXT NOT NULL,
+            timestamp DATETIME NOT NULL
+        )
+    """
+
     def _create_table(self, conn):
         """Create the suggestions table if it doesn't exist."""
-        conn.execute("""
-            CREATE TABLE IF NOT EXISTS suggestions (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                file TEXT NOT NULL,
-                question TEXT NOT NULL,
-                response JSON NOT NULL,
-                model TEXT NOT NULL,
-                timestamp DATETIME NOT NULL
-            )
-        """)
-        conn.commit()
+        try:
+            conn.execute(self.CREATE_TABLE_SQL)
+            conn.commit()
+        except sqlite3.Error as e:
+            raise sqlite3.OperationalError(f"Failed to create suggestions table: {e}")
 
     def add_suggestion(self, file: str, question: str, response: Dict, model: str):
         with self._get_connection() as conn:
