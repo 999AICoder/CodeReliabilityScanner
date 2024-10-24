@@ -8,10 +8,10 @@ from logger import Logger
 
 class SuggestionDB:
     """A simple SQLite database wrapper for storing code suggestions."""
-    def __init__(self, db_path: str = "suggestions.db"):
+    def __init__(self, db_path: str = "suggestions.db", force_file: bool = False):
         self.logger = Logger()
         self.logger.info(f"Initializing SuggestionDB with path: {db_path}")
-        self.db_path = ':memory:' if 'pytest' in sys.modules else db_path
+        self.db_path = db_path if force_file else (':memory:' if 'pytest' in sys.modules else db_path)
         
         # Create db directory if needed
         if self.db_path != ':memory:':

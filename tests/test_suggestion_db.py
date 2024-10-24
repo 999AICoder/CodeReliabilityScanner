@@ -141,9 +141,8 @@ def test_file_based_db(tmp_path):
     """Test that file-based database works correctly."""
     db_path = tmp_path / "test_suggestions.db"
     
-    # Use context manager for first connection
-    # changed this this to db1 to avoid name conflict with db fixture
-    with SuggestionDB(str(db_path)) as db1:
+    # Use context manager for first connection with force_file=True
+    with SuggestionDB(str(db_path), force_file=True) as db1:
         try:    
             db1.add_suggestion(
                 file="test.py",
@@ -154,8 +153,8 @@ def test_file_based_db(tmp_path):
         except Exception as e:
             print(f"problem with db1: {e}")
     
-    # Use context manager for second connection
-    with SuggestionDB(str(db_path)) as db2:
+    # Use context manager for second connection with force_file=True
+    with SuggestionDB(str(db_path), force_file=True) as db2:
         suggestions = db2.get_suggestions()
         print(f"suggestions: {suggestions}")
         assert len(suggestions) == 1
