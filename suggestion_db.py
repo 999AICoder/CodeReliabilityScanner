@@ -17,10 +17,10 @@ class SuggestionDB:
                 os.makedirs(db_dir)
         self.db_path = db_path
         # Create tables immediately
-        with sqlite3.connect(self.db_path) as conn:
-            self._create_table(conn)
+        self._create_table()
 
-    def _create_table(self, conn):
+    def _create_table(self):
+        with sqlite3.connect(self.db_path) as conn:
         conn.execute("""
                 CREATE TABLE IF NOT EXISTS suggestions (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,

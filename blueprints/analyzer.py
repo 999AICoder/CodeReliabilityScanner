@@ -17,6 +17,8 @@ def get_config_path():
     """Get the appropriate config file path based on environment."""
     if os.environ.get('DOCKER_ENV'):
         return 'config_docker.yaml'
+    if os.environ.get('PYTEST_CURRENT_TEST'):
+        return 'config_local.yaml'  # Use local config for tests
     return 'config_local.yaml'
 
 def handle_analyzer_error(e):
@@ -35,6 +37,9 @@ def handle_analyzer_error(e):
     elif isinstance(e, MaxRetriesExceededError):
         error_message = "Maximum retries exceeded. Please try again later."
         status_code = 503
+    elif isinstance(e, ValueError):
+        error_message = str(e)
+        status_code = 400
     
     if request.is_json:
         return jsonify({'error': error_message}), status_code
