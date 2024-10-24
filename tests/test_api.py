@@ -2,6 +2,7 @@ import pytest
 from flask.testing import FlaskClient
 import sys
 from pathlib import Path
+from flask import url_for
 # Add the directory containing agent_v2.py to the PYTHONPATH
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 from app import app
@@ -10,17 +11,29 @@ import json
 @pytest.fixture
 def client():
     app.config['TESTING'] = True
+    app.config['SERVER_NAME'] = 'localhost'
     with app.test_client() as client:
-        yield client
+        with app.app_context():
+            print("\nRegistered routes:")
+            for rule in app.url_map.iter_rules():
+                print(f"{rule.endpoint}: {rule.rule}")
+            yield client
 
 def test_analyze_endpoint(client):
+    print("\nTesting endpoint:")
     test_data = {
         'code': 'def test(): pass',
         'question': 'What does this do?'
     }
-    response = client.post('/analyze', 
+    with app.test_request_context():
+        url = url_for('analyzer.analyze')
+        print(f"Using URL: {url}")
+    response = client.post(url,
                           data=json.dumps(test_data),
                           content_type='application/json')
+    print(f"Response status: {response.status_code}")
+    if response.status_code != 200:
+        print(f"Response data: {response.data}")
     assert response.status_code == 200
     data = json.loads(response.data)
     assert 'response' in data
