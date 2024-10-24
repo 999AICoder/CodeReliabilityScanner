@@ -24,6 +24,11 @@ MAX_QUESTION_LENGTH: 1000
 MAX_MEMORY_MB: 1000
 API_RATE_LIMIT: 5
 
+SUPPORTED_LANGUAGES:
+  - python
+  - javascript
+  - java
+
 LANGUAGE_MAX_LENGTHS:
     default: 50000
     python: 50000
