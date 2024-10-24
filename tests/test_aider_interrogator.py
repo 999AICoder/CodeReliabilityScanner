@@ -18,6 +18,7 @@ def mock_config(tmp_path):
     config.aider_model = "test-model"
     config.aider_weak_model = "test-weak-model"
     config.repo_path = Path(".")
+    config.api_rate_limit = 60  # Add the missing api_rate_limit attribute
     # Use a temporary directory for the database
     config.db_path = str(tmp_path / "test.db")
     return config
