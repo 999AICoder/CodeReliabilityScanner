@@ -83,9 +83,11 @@ def test_resource_cleanup(mock_config, mock_command_runner, mock_logger):
             os.unlink(temp_file)
 
 def test_agent_initialization(mock_config, tmp_path):
-    # Initialize git repo
+    # Initialize git repo and set current directory
     import subprocess
-    subprocess.run(['git', 'init', str(tmp_path)], check=True)
+    import os
+    os.chdir(str(tmp_path))
+    subprocess.run(['git', 'init'], check=True)
         
     # Create a temporary config file
     config_path = tmp_path / "test_config.yml"

@@ -28,7 +28,11 @@ class Logger:
         # Add file handler if log_dir is specified
         if log_dir:
             log_dir = Path(log_dir)
-            log_dir.mkdir(exist_ok=True, parents=True)
+            try:
+                log_dir.mkdir(exist_ok=True, parents=True)
+            except Exception as e:
+                print(f"Warning: Could not create log directory {log_dir}: {e}")
+                return
             file_handler = logging.handlers.RotatingFileHandler(
                 log_dir / 'app.log',
                 maxBytes=max_bytes,

@@ -20,8 +20,8 @@ def get_config_path():
     return 'config_local.yaml'
 
 def handle_analyzer_error(e):
-    error_message = "An unexpected error occurred"
-    status_code = 500
+    error_message = str(e) or "An unexpected error occurred"
+    status_code = getattr(e, 'status_code', 500)
     
     if isinstance(e, AiderTimeoutError):
         error_message = "The request timed out. Please try again with a smaller code sample."
