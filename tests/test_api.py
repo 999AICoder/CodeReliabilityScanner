@@ -1,57 +1,25 @@
 import pytest
 from flask.testing import FlaskClient
-import sys
-from pathlib import Path
 from flask import url_for
-# Add the directory containing agent_v2.py to the PYTHONPATH
-sys.path.append(str(Path(__file__).resolve().parent.parent))
-from app import app
 import json
 
 @pytest.fixture
-def test_config(tmp_path, monkeypatch):
-    config_path = tmp_path / "config_local.yaml"
-    with open(config_path, 'w') as f:
-        f.write("""
-REPO_PATH: '.'
-VENV_PATH: ''
-VENV_DIR: ''
-TEST_COMMAND: ''
-AIDER_PATH: ''
-MAX_LINE_LENGTH: 100
-AUTOPEP8_FIX: false
-AIDER_MODEL: 'test-model'
-AIDER_WEAK_MODEL: 'test-weak-model'
-LINTER: 'pylint'
-LINE_COUNT_MAX: 200
-LINE_COUNT_MIN: 10
-ENABLE_BLACK: false
-MAX_CODE_LENGTH: 50000
-MAX_QUESTION_LENGTH: 1000
-MAX_MEMORY_MB: 512
-MAX_CPU_PERCENT: 80.0
-DB_CONNECTION_TIMEOUT: 30
-DB_CONNECTION_RETRIES: 3
-API_RATE_LIMIT: 60
-CLEANUP_THRESHOLD_MB: 400
-LOG_DIR: 'logs'
-MAX_REQUEST_SIZE_MB: 1
-""")
-    monkeypatch.setenv('PYTEST_CURRENT_TEST', 'True')
-    monkeypatch.setattr('blueprints.analyzer.get_config_path', lambda: str(config_path))
-    return config_path
-
-@pytest.fixture
-def client(test_config, monkeypatch):
-    monkeypatch.setenv('PYTEST_CURRENT_TEST', 'True')
+def app(setup_test_config):
+    # Import app only after config is set up
+    from app import create_base_app
+    from blueprints.analyzer import analyzer
+    
+    app = create_base_app()
     app.config['TESTING'] = True
     app.config['SERVER_NAME'] = 'localhost'
-    app.config['WTF_CSRF_ENABLED'] = False  # Disable CSRF for testing
+    app.config['WTF_CSRF_ENABLED'] = False
+    app.register_blueprint(analyzer)
+    return app
+
+@pytest.fixture
+def client(app):
     with app.test_client() as client:
         with app.app_context():
-            print("\nRegistered routes:")
-            for rule in app.url_map.iter_rules():
-                print(f"{rule.endpoint}: {rule.rule}")
             yield client
 
 @pytest.mark.timeout(30)  # Set 30 second timeout
