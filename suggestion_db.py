@@ -31,15 +31,20 @@ class SuggestionDB:
         """Context manager exit point - ensure proper cleanup."""
         if self._conn:
             try:
-                self._conn.commit()
+                if exc_type is None:  # No exception occurred
+                    self._conn.commit()
+                else:
+                    self._conn.rollback()
+            finally:
                 self._conn.close()
                 self._conn = None
-            except Exception as e:
-                self.logger.error(f"Error during database cleanup: {e}")
 
     def _initialize_db(self):
         """Initialize database connection and create table if needed."""
         self._conn = sqlite3.connect(self.db_path)
+        # Enable WAL mode immediately after connection
+        self._conn.execute('PRAGMA journal_mode=WAL')
+        self._conn.execute('PRAGMA foreign_keys=ON')
         self._conn.row_factory = sqlite3.Row
 
         try:
