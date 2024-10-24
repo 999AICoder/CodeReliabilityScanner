@@ -5,7 +5,7 @@ from blueprints.analyzer import analyzer
 
 
 app = create_base_app()
-app.register_blueprint(analyzer, url_prefix='/analyze')
+app.register_blueprint(analyzer)
 
 
 if __name__ == '__main__':
