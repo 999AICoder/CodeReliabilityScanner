@@ -2,7 +2,8 @@ import pytest
 import time
 from pathlib import Path
 from unittest.mock import Mock, patch
-from aider_interrogator import AiderInterrogator, Agent
+from aider_runner import AiderInterrogator
+from agent_v2 import Agent
 from exceptions import AiderTimeoutError, AiderProcessError
 from config import Config
 
