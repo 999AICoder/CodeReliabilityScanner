@@ -4,15 +4,17 @@ import sys
 from typing import List, Dict
 import json
 from datetime import datetime
+from logger import Logger
 
 class SuggestionDB:
     def __init__(self, db_path: str = "suggestions.db"):
+
         self.db_path = ':memory:' if 'pytest' in sys.modules else db_path
         if self.db_path != ':memory:':
             db_dir = os.path.dirname(db_path)
             if db_dir and not os.path.exists(db_dir):
                 os.makedirs(db_dir)
-        
+
         # Initialize database and create table
         with self._get_connection() as conn:
             try:
