@@ -9,7 +9,38 @@ from app import app
 import json
 
 @pytest.fixture
-def client():
+def test_config(tmp_path):
+    config_path = tmp_path / "test_config.yml"
+    with open(config_path, 'w') as f:
+        f.write("""
+REPO_PATH: '.'
+VENV_PATH: ''
+VENV_DIR: ''
+TEST_COMMAND: ''
+AIDER_PATH: ''
+MAX_LINE_LENGTH: 100
+AUTOPEP8_FIX: false
+AIDER_MODEL: 'test-model'
+AIDER_WEAK_MODEL: 'test-weak-model'
+LINTER: 'pylint'
+LINE_COUNT_MAX: 200
+LINE_COUNT_MIN: 10
+ENABLE_BLACK: false
+MAX_CODE_LENGTH: 50000
+MAX_QUESTION_LENGTH: 1000
+MAX_MEMORY_MB: 512
+MAX_CPU_PERCENT: 80.0
+DB_CONNECTION_TIMEOUT: 30
+DB_CONNECTION_RETRIES: 3
+API_RATE_LIMIT: 60
+CLEANUP_THRESHOLD_MB: 400
+LOG_DIR: 'logs'
+""")
+    return config_path
+
+@pytest.fixture
+def client(test_config, monkeypatch):
+    monkeypatch.setenv('PYTEST_CURRENT_TEST', 'True')
     app.config['TESTING'] = True
     app.config['SERVER_NAME'] = 'localhost'
     app.config['WTF_CSRF_ENABLED'] = False  # Disable CSRF for testing
@@ -21,7 +52,7 @@ def client():
             yield client
 
 @pytest.mark.timeout(30)  # Set 30 second timeout
-def test_analyze_endpoint(client):
+def test_analyze_endpoint(client, test_config):
     print("\nTesting endpoint:")
     test_data = {
         'code': 'def test(): pass',
@@ -37,6 +68,8 @@ def test_analyze_endpoint(client):
     if response.status_code != 200:
         print(f"Response data: {response.data}")
     assert response.status_code == 200
+    data = json.loads(response.data)
+    assert 'response' in data
     data = json.loads(response.data)
     assert 'response' in data
 
