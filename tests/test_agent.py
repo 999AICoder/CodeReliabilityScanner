@@ -177,6 +177,10 @@ def test_run_with_different_file_sizes(file_count, line_count, expected_process_
             "LANGUAGE_MAX_LENGTHS": {
                 "default": 50000,
                 "python": 50000
+            },
+            "DANGEROUS_PATTERNS": {
+                "default": ["rm -rf", "sudo", "chmod"],
+                "python": ["os.system", "subprocess"]
             }
         }
         with open(config_path, 'w') as f:
