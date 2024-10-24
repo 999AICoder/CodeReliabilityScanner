@@ -74,6 +74,10 @@ class SuggestionDB:
         """Get a database connection, reconnecting if needed."""
         if not self._conn:
             self._initialize_db()
+            # Enable WAL mode for better concurrency
+            self._conn.execute('PRAGMA journal_mode=WAL')
+            # Enable foreign keys
+            self._conn.execute('PRAGMA foreign_keys=ON')
         return self._conn
 
     def _verify_table(self, conn):
@@ -120,31 +124,24 @@ class SuggestionDB:
             self.logger.error(f"Error adding suggestion: {e}")
             conn.rollback()
             raise
-        finally:
-            if self.db_path != ':memory:':
-                conn.close()
 
     def get_suggestions(self, file: str = None) -> List[Dict]:
         conn = self._get_connection()
-        try:
-            conn.row_factory = sqlite3.Row
-            if file:
-                cursor = conn.execute(
-                    "SELECT * FROM suggestions WHERE file = ? ORDER BY timestamp DESC",
-                    (file,)
-                )
-            else:
-                cursor = conn.execute("SELECT * FROM suggestions ORDER BY timestamp DESC")
-            
-            results = []
-            for row in cursor.fetchall():
-                suggestion = dict(row)
-                suggestion['response'] = json.loads(suggestion['response'])
-                results.append(suggestion)
-            return results
-        finally:
-            if self.db_path != ':memory:':
-                conn.close()
+        conn.row_factory = sqlite3.Row
+        if file:
+            cursor = conn.execute(
+                "SELECT * FROM suggestions WHERE file = ? ORDER BY timestamp DESC",
+                (file,)
+            )
+        else:
+            cursor = conn.execute("SELECT * FROM suggestions ORDER BY timestamp DESC")
+        
+        results = []
+        for row in cursor.fetchall():
+            suggestion = dict(row)
+            suggestion['response'] = json.loads(suggestion['response'])
+            results.append(suggestion)
+        return results
 
     def get_suggestion(self, suggestion_id: int) -> Dict:
         with self._get_connection() as conn:
