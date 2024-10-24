@@ -137,25 +137,22 @@ def test_json_serialization(db):
     suggestion = db.get_suggestions()[0]
     assert suggestion['response'] == complex_response
 
-def test_file_based_db():
+def test_file_based_db(tmp_path):
     """Test that file-based database works correctly."""
-    # Use a temporary file path
-    db_path = "test_suggestions.db"
-    try:
-        db = SuggestionDB(db_path)
-        db.add_suggestion(
-            file="test.py",
-            question="question",
-            response={"response": "answer"},
-            model="test-model"
-        )
-        
-        # Create a new connection to verify persistence
-        db2 = SuggestionDB(db_path)
-        suggestions = db2.get_suggestions()
-        assert len(suggestions) == 1
-        assert suggestions[0]['file'] == "test.py"
-    finally:
-        # Cleanup
-        if Path(db_path).exists():
-            Path(db_path).unlink()
+    db_path = tmp_path / "test_suggestions.db"
+    db = SuggestionDB(str(db_path))
+    db.add_suggestion(
+        file="test.py",
+        question="question",
+        response={"response": "answer"},
+        model="test-model"
+    )
+    
+    # Force connection close to ensure data is written
+    db._conn.close()
+    
+    # Create a new connection to verify persistence
+    db2 = SuggestionDB(str(db_path))
+    suggestions = db2.get_suggestions()
+    assert len(suggestions) == 1
+    assert suggestions[0]['file'] == "test.py"
