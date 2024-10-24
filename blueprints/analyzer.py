@@ -13,13 +13,22 @@ from exceptions import (
 
 analyzer = Blueprint('analyzer', __name__)
 
+_config_path_override = None
+
+def set_config_path_override(path):
+     """Set the config file path override."""
+     global _config_path_override
+     _config_path_override = path
+
 def get_config_path():
-    """Get the appropriate config file path based on environment."""
-    if os.environ.get('DOCKER_ENV'):
-        return 'config_docker.yaml'
-    if os.environ.get('PYTEST_CURRENT_TEST'):
-        return 'config_local.yaml'  # Use local config for tests
-    return 'config_local.yaml'
+     """Get the appropriate config file path based on environment."""
+     global _config_path_override
+     if _config_path_override:
+         return _config_path_override
+     if os.environ.get('DOCKER_ENV'):
+         return 'config_docker.yaml'
+     return 'config_local.yaml'
+
 
 def get_config():
     """Get configuration instance."""
