@@ -1,5 +1,4 @@
 import pytest
-from flask.testing import FlaskClient
 from flask import url_for
 import json
 

@@ -42,7 +42,7 @@ def delete_suggestion(suggestion_id):
     response = requests.delete(f"http://localhost:8000/suggestions/{suggestion_id}")
     if response.status_code == 200:
         suggestion = response.json()
-        console.print(f"[yellow]Are you sure you want to delete the following suggestion?[/yellow]")
+        console.print("[yellow]Are you sure you want to delete the following suggestion?[/yellow]")
         console.print(f"[cyan]ID:[/cyan] {suggestion['id']}")
         console.print(f"[magenta]File:[/magenta] {suggestion['file']}")
         console.print(f"[green]Question:[/green] {suggestion['question']}")

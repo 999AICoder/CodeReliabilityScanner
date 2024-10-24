@@ -1,9 +1,7 @@
 """Resource management module for monitoring and controlling system resources."""
-import os
 import psutil
 import threading
 import time
-from typing import Optional
 from pathlib import Path
 import logging
 from datetime import datetime, timedelta

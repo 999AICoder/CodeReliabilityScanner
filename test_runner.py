@@ -2,9 +2,6 @@ import os
 import subprocess
 from pathlib import Path
 import unittest
-from pathlib import Path
-import os
-import subprocess
 from config import Config
 from command_runner import CommandRunner
 from logger import Logger

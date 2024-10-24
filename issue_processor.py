@@ -8,12 +8,6 @@ various strategies.
 
 from pathlib import Path
 from typing import List, Dict
-from config import Config
-from command_runner import CommandRunner
-from git_manager import GitManager
-from aider_runner import AiderRunner
-from test_runner import TestRunner
-from logger import Logger
 
 class IssueProcessorConfig:
     """

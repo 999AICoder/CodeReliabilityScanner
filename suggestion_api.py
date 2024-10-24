@@ -2,7 +2,6 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import List, Dict
 from suggestion_db import SuggestionDB
-from datetime import datetime
 
 app = FastAPI()
 db = SuggestionDB()

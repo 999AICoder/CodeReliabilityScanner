@@ -1,5 +1,4 @@
 import pytest
-from pathlib import Path
 
 @pytest.fixture(autouse=True)
 def setup_test_config(tmp_path, monkeypatch):

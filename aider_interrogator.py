@@ -4,8 +4,6 @@ for managing and interrogating Python code using Aider.
 """
 
 import subprocess
-import os
-import signal
 import time
 from pathlib import Path
 import tempfile
