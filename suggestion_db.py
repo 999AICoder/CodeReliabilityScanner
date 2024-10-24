@@ -19,11 +19,15 @@ class SuggestionDB:
             if db_dir and not os.path.exists(db_dir):
                 os.makedirs(db_dir)
 
-        # Maintain a single connection for both memory and file-based DBs
+        # Initialize connection
+        self._conn = None
+        self._initialize_db()
+
+    def _initialize_db(self):
+        """Initialize database connection and create table if needed."""
         self._conn = sqlite3.connect(self.db_path)
         self._conn.row_factory = sqlite3.Row
 
-        # Initialize database and create table
         try:
             self.logger.info("Creating database connection and table")
             cursor = self._conn.cursor()
@@ -43,6 +47,14 @@ class SuggestionDB:
         except sqlite3.Error as e:
             self.logger.error(f"Database initialization error: {e}")
             raise
+
+    def __del__(self):
+        """Cleanup database connection when object is destroyed."""
+        if hasattr(self, '_conn') and self._conn:
+            try:
+                self._conn.close()
+            except Exception as e:
+                self.logger.error(f"Error closing database connection: {e}")
 
     def _get_connection(self):
         """Get a database connection, reconnecting if needed."""
