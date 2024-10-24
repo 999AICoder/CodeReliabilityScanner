@@ -48,11 +48,11 @@ def test_invalid_input(client):
     }
     with app.test_request_context():
         url = url_for('analyzer.analyze')
-        response = client.post(url,
-                             data=json.dumps(test_data),
-                             content_type='application/json')
-        assert response.status_code == 400  # Expect a 400 Bad Request response
-        data = json.loads(response.data)
+    response = client.post(url,
+                         data=json.dumps(test_data),
+                         content_type='application/json')
+    assert response.status_code == 400  # Expect a 400 Bad Request response
+    data = json.loads(response.data)
     assert 'error' in data
 
 # @pytest.mark.timeout(30)  # Set 30 second timeout
@@ -74,7 +74,7 @@ def test_large_input_validation(client):
     }
     with app.test_request_context():
         url = url_for('analyzer.analyze')
-        response = client.post(url,
-                             data=json.dumps(test_data),
-                             content_type='application/json')
-        assert response.status_code == 400  # Expect a 400 Bad Request response
+    response = client.post(url,
+                         data=json.dumps(test_data),
+                         content_type='application/json')
+    assert response.status_code == 400  # Expect a 400 Bad Request response
