@@ -35,6 +35,8 @@ def create_base_app():
     # Register error handlers
     @app.errorhandler(CSRFError)
     def handle_csrf_error(e):
+        if request.content_type == 'application/json':
+            return jsonify({'error': 'CSRF token validation failed'}), 400
         return render_template('error.html', error="CSRF token validation failed"), 400
 
     @app.errorhandler(RequestEntityTooLarge)
