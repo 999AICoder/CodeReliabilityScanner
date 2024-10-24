@@ -140,19 +140,18 @@ def test_json_serialization(db):
 def test_file_based_db(tmp_path):
     """Test that file-based database works correctly."""
     db_path = tmp_path / "test_suggestions.db"
-    db = SuggestionDB(str(db_path))
-    db.add_suggestion(
-        file="test.py",
-        question="question",
-        response={"response": "answer"},
-        model="test-model"
-    )
     
-    # Force connection close to ensure data is written
-    db._conn.close()
+    # Use context manager for first connection
+    with SuggestionDB(str(db_path)) as db:
+        db.add_suggestion(
+            file="test.py",
+            question="question",
+            response={"response": "answer"},
+            model="test-model"
+        )
     
-    # Create a new connection to verify persistence
-    db2 = SuggestionDB(str(db_path))
-    suggestions = db2.get_suggestions()
-    assert len(suggestions) == 1
-    assert suggestions[0]['file'] == "test.py"
+    # Use context manager for second connection
+    with SuggestionDB(str(db_path)) as db2:
+        suggestions = db2.get_suggestions()
+        assert len(suggestions) == 1
+        assert suggestions[0]['file'] == "test.py"
