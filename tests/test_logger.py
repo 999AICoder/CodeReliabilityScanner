@@ -16,10 +16,11 @@ def test_logger_initialization():
 
 def test_logger_with_file_handler():
     test_log_dir = "test_logs"
-    logger = Logger(log_dir=test_log_dir)
+    logger = Logger(log_dir=test_log_dir, max_bytes=100)
     assert Path(test_log_dir).exists()
     assert any(isinstance(h, logging.handlers.RotatingFileHandler) 
               for h in logger.logger.handlers)
+    assert len(logger.logger.handlers) == 2  # Stream handler and file handler
 
 def test_log_rotation():
     test_log_dir = "test_logs"
