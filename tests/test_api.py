@@ -1,17 +1,31 @@
 import pytest
 from flask import url_for
 import json
+import sys
+from pathlib import Path
+# Add the directory containing agent_v2.py to the PYTHONPATH
+sys.path.append(str(Path(__file__).resolve().parent.parent))
+
 
 @pytest.fixture
 def app(setup_test_config):
     # Import app only after config is set up
-    from app import create_base_app
+    from base_app import create_base_app
     from blueprints.analyzer import analyzer
     
     app = create_base_app()
     app.config['TESTING'] = True
     app.config['SERVER_NAME'] = 'localhost'
     app.config['WTF_CSRF_ENABLED'] = False
+    app.config['LANGUAGE_MAX_LENGTHS'] = {
+        'default': 50000,
+        'python': 50000
+        }
+
+    app.config['DANGEROUS_PATTERNS'] = {
+        'default': ['rm -rf', 'sudo', 'chmod'],
+        'python': ['os.system', 'subprocess']
+    }
     app.register_blueprint(analyzer)
     return app
 
