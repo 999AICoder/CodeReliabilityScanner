@@ -77,9 +77,18 @@ def analyze():
                 data = request.get_json()
                 code = data.get('code', '').strip()
                 question = data.get('question', '')
+                language = data.get('language')
                 
                 # Validate input
-                is_valid, error_message = validate_input(code, question)
+                is_valid, error_message = validate_input(code, question, language)
+                
+                # If no language provided, try to detect it
+                if not language:
+                    language = detect_language(code)
+                
+                # Append language context to question if detected
+                if language:
+                    question = f"{question} (We believe this code is written in {language})"
                 if not is_valid:
                     return jsonify({'error': error_message}), 400
                 
@@ -90,10 +99,19 @@ def analyze():
                 return jsonify({'response': response})
             else:
                 code = request.form.get('code', '').strip()
+                language = request.form.get('language')
                 question = "As the worlds greatest developer what reliability concerns do you see in the code provided? Do not provide any code in your response"
                 
                 # Validate input
-                is_valid, error_message = validate_input(code, question)
+                is_valid, error_message = validate_input(code, question, language)
+                
+                # If no language provided, try to detect it
+                if not language:
+                    language = detect_language(code)
+                
+                # Append language context to question if detected
+                if language:
+                    question = f"{question} (We believe this code is written in {language})"
                 if not is_valid:
                     return render_template('error.html', error=error_message), 400
                 
