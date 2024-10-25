@@ -37,7 +37,7 @@ def test_csrf_protection_post(client):
 
 def test_csrf_protection_json(client):
     """Test that JSON requests without CSRF token are rejected."""
-    response = client.post('/analyze/analyze',
+    response = client.post('/analyze',
                          data=json.dumps({
                              'code': 'print("hello")',
                              'question': 'What does this do?'
