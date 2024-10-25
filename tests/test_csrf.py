@@ -12,6 +12,8 @@ def app(setup_test_config):
     app.config['SERVER_NAME'] = 'localhost'
     # Enable CSRF for testing
     app.config['WTF_CSRF_ENABLED'] = True
+    # Register the analyzer blueprint
+    app.register_blueprint(analyzer)
     return app
 
 @pytest.fixture
