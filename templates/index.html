@@ -20,6 +20,14 @@
 <body>
     <div class="container mt-5">
         <h1 class="mb-4">Code Reliability Interrogator</h1>
+        <div class="alert alert-info mb-4">
+            <h4 class="alert-heading">How to Use:</h4>
+            <p>1. Select your code's programming language or let us auto-detect it.</p>
+            <p>2. Paste your code snippet in the text area below.</p>
+            <p>3. Click Submit to receive an analysis of potential reliability concerns.</p>
+            <hr>
+            <p class="mb-0">The analysis will examine your code for potential issues related to reliability, maintainability, and best practices.</p>
+        </div>
         <form id="analyzeForm" action="{{ url_for('analyzer.analyze') }}" method="post">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <!-- {{ csrf_token() }} -->
