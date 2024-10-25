@@ -63,13 +63,12 @@ def handle_analyzer_error(e):
         return jsonify({'error': error_message}), status_code
     return render_template('error.html', error=error_message), status_code
 
-@analyzer.route('/', methods=['GET'])
-def index():
-    return render_template('index.html')
-
+@analyzer.route('/', methods=['GET', 'POST'])
 @analyzer.route('/analyze', methods=['GET', 'POST'])
 def analyze():
-    if request.method == 'POST':
+    if request.method == 'GET':
+        return render_template('index.html')
+    elif request.method == 'POST':
         try:
             if not request.is_json and not request.form.get('code'):
                 return jsonify({'error': 'No code provided'}), 400
