@@ -7,7 +7,7 @@ from werkzeug.exceptions import RequestEntityTooLarge
 def create_base_app():
     """Create and configure the base Flask application."""
     app = Flask(__name__)
-    app.config['SECRET_KEY'] = os.environ.get('FLASK_SECRET_KEY', 'your-secret-key-here')
+    app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-key-change-in-production')
     app.config['MAX_CONTENT_LENGTH'] = 1 * 1024 * 1024  # 1MB max-limit
 
     # Initialize security extensions
