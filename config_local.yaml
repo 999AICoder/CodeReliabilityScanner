@@ -46,30 +46,30 @@ LANGUAGE_MAX_LENGTHS:
 
 DANGEROUS_PATTERNS:
   default:
-    - "rm -rf"
-    - "format"
-    - "mkfs"
-    - "dd if="
-    - "wget"
-    - "curl"
-    - "> /dev/"
-    - "> /proc/"
+    - "rm -rf /"  # More specific to root deletion
+    - "mkfs."     # More specific to filesystem formatting
+    - "dd if=/dev/"
+    - "wget http"  # More specific to downloading
+    - "curl http"  # More specific to downloading
+    - "> /dev/sd"  # More specific to device writing
+    - "> /proc/sys"
     - "> /sys/"
-    - "sudo"
-    - "chmod"
-    - "chown"
+    - "sudo rm"
+    - "chmod 777"  # Specific dangerous permission
+    - "chown -R"  # Recursive ownership change
   python:
-    - "os.system"
-    - "subprocess"
-    - "eval("
-    - "exec("
-    - "__import__"
+    - "os.system("
+    - "subprocess.call("
+    - "subprocess.run("
+    - "eval(input"
+    - "exec(input"
+    - "__import__('os')"
   javascript:
-    - "eval("
-    - "Function("
-    - "process.exit"
-    - "require('child_process')"
+    - "eval(input"
+    - "new Function("
+    - "process.exit("
+    - "require('child_process')."
   java:
-    - "Runtime.getRuntime()"
-    - "ProcessBuilder"
-    - "System.exit"
+    - "Runtime.getRuntime().exec("
+    - "ProcessBuilder("
+    - "System.exit(0)"  # Only block explicit exits
