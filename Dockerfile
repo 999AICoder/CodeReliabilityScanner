@@ -21,8 +21,6 @@ ENV DOCKER_ENV=1
 ENV NAME=World
 ENV PYTHONWARNINGS="ignore::SyntaxWarning"
 ENV GOOGLE_CLOUD_PROJECT=""
-ENV FLASK_APP="app.py"
-ENV FLASK_ENV="production"
 
 # Install Google Cloud SDK and other dependencies
 RUN apt-get update && apt-get install -y \
