@@ -18,7 +18,7 @@ from agent_v2 import Agent, AgentComponents
 
 
 def test_agent_initialization():
-    config_path = Path("config.yaml")
+    config_path = Path("config_local.yaml")
     agent = Agent(config_path)
     assert isinstance(agent.config, Config)
     assert isinstance(agent.logger, Logger)
@@ -27,6 +27,7 @@ def test_agent_initialization():
 
 @patch("agent_v2.git.Repo")
 def test_get_tracked_files(mock_repo):
+    """Test the get_tracked_files method"""
     config_path = Path("config.yaml")
     agent = Agent(config_path)
     mock_repo.return_value.git.ls_files.return_value = "file1.py\nfile2.py"
@@ -38,6 +39,7 @@ def test_get_tracked_files(mock_repo):
 
 @patch('builtins.open', new_callable=mock_open, read_data="dummy_config_data")
 def test_run(mock_open):
+    """Test the run method"""
     with tempfile.TemporaryDirectory() as temp_dir:
         with patch("yaml.safe_load") as mock_yaml_load, patch(
             "agent_v2.FileProcessor.process_file"
@@ -92,6 +94,7 @@ def test_run(mock_open):
 
 
 def test_command_runner():
+    """Test the CommandRunner class"""
     config = Mock(spec=Config)
     logger = Mock(spec=Logger)
     command_runner = CommandRunner(config, logger)
@@ -101,6 +104,7 @@ def test_command_runner():
 
 
 def test_verify_repo_path():
+    """Test the verify_repo_path method"""
     with patch("agent_v2.Config") as mock_config, patch("agent_v2.Logger"), patch("agent_v2.GitManager.is_git_repo") as mock_is_git_repo:
         mock_config.return_value.repo_path = Path("/test/repo")
         mock_is_git_repo.return_value = True
@@ -113,6 +117,7 @@ def test_verify_repo_path():
 
 
 def test_display_config_summary(capsys):
+    """Test the display_config_summary method"""
     with patch("agent_v2.Config") as mock_config, patch("agent_v2.Logger"), \
          patch("agent_v2.GitManager.is_git_repo", return_value=True):
         mock_config.return_value.repo_path = Path("/test/repo")
@@ -155,6 +160,7 @@ def test_display_config_summary(capsys):
     (3, 25, 0),  # No files should be processed (above max line count)
 ])
 def test_run_with_different_file_sizes(file_count, line_count, expected_process_count):
+    """Test the run method with different file sizes"""
     with tempfile.TemporaryDirectory() as temp_dir:
         # Initialize git repository
         subprocess.run(["git", "init"], cwd=temp_dir, check=True)
