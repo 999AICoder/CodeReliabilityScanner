@@ -1,15 +1,76 @@
 REPO_PATH: "/full/path/to/repo"
-LINTER: "pylint"  # Options: "pylint", "flake8", "ruff"
 VENV_PATH: "/full/path/to/repo/<virtual env dir>"
-# venv .venv etc.
-VENV_DIR: "venv"
+VENV_DIR: "venv"  # venv .venv etc.
 TEST_COMMAND: ["python", "-m", "pytest", "-q"]
 AIDER_PATH: "/full/path/to/aider"
 MAX_LINE_LENGTH: 100
 AUTOPEP8_FIX: True
 ENABLE_BLACK: False
-# the model in this early release is a full path, shortcut options have not been tested
 AIDER_MODEL: "<model you want to use>"
 AIDER_WEAK_MODEL: "<weak model you want to use>"
+LINTER: "pylint"  # Options: "pylint", "flake8", "ruff"
 LINE_COUNT_MAX: 500
 LINE_COUNT_MIN: 50
+
+# Security settings
+MAX_CODE_LENGTH: 50000
+MAX_QUESTION_LENGTH: 1000
+MAX_REQUEST_SIZE_MB: 1
+MAX_MEMORY_MB: 1000
+API_RATE_LIMIT: 5
+
+# Language settings
+SUPPORTED_LANGUAGES:
+  - python
+  - javascript
+  - java
+  - cpp
+  - csharp
+  - go
+  - rust
+  - typescript
+  - ruby
+  - php
+
+LANGUAGE_MAX_LENGTHS:
+  default: 50000
+  python: 50000
+  javascript: 50000
+  java: 100000
+  cpp: 50000
+  csharp: 75000
+  go: 50000
+  rust: 50000
+  typescript: 50000
+  ruby: 50000
+  php: 50000
+
+DANGEROUS_PATTERNS:
+  default:
+    - "rm -rf /"  # More specific to root deletion
+    - "mkfs."     # More specific to filesystem formatting
+    - "dd if=/dev/"
+    - "wget http"  # More specific to downloading
+    - "curl http"  # More specific to downloading
+    - "> /dev/sd"  # More specific to device writing
+    - "> /proc/sys"
+    - "> /sys/"
+    - "sudo rm"
+    - "chmod 777"  # Specific dangerous permission
+    - "chown -R"  # Recursive ownership change
+  python:
+    - "os.system("
+    - "subprocess.call("
+    - "subprocess.run("
+    - "eval(input"
+    - "exec(input"
+    - "__import__('os')"
+  javascript:
+    - "eval(input"
+    - "new Function("
+    - "process.exit("
+    - "require('child_process')."
+  java:
+    - "Runtime.getRuntime().exec("
+    - "ProcessBuilder("
+    - "System.exit(0)"  # Only block explicit exits
