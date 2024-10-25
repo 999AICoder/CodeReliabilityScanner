@@ -3,7 +3,7 @@ import html
 from flask import Blueprint, render_template, request, jsonify
 from config import Config
 from aider_interrogator import Agent
-from validators import validate_input
+from validators import validate_input, detect_language
 from exceptions import (
     AiderTimeoutError, 
     AiderProcessError, 
