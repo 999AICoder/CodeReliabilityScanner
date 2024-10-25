@@ -96,3 +96,20 @@ def test_large_input_validation(client):
                          data=json.dumps(test_data),
                          content_type='application/json')
     assert response.status_code == 400  # Expect a 400 Bad Request response
+
+def test_result_template_rendering(client):
+    """Test that the result template renders correctly with all required URLs."""
+    test_data = {
+        'code': 'def test(): pass',
+        'language': 'python'
+    }
+    response = client.post(url_for('analyzer.analyze'), data=test_data)
+    assert response.status_code == 200
+    
+    # Check that the response contains the correct URLs
+    html_content = response.data.decode()
+    assert 'href="/analyze"' in html_content
+    
+    # Test that we can access the "Back to Home" link
+    back_to_home_response = client.get('/analyze')
+    assert back_to_home_response.status_code == 200
